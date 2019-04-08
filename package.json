@@ -1,0 +1,44 @@
+{
+  "name": "vpin",
+  "version": "0.1.0",
+  "description": "vue-pin component",
+  "main": "dist/vpin.cjs.js",
+  "module": "dist/vpin.esm.js",
+  "jsnext:main": "dist/vpin.esm.js",
+  "browser": "dist/vpin.umd.js",
+  "scripts": {
+    "build": "cross-env BUILD=production rollup -c",
+    "watch": "rollup -c -w",
+    "pretest": "rollup -c",
+    "test": "mocha",
+    "prepublish": "cross-env BUILD=production npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lpreterite/vpin.git"
+  },
+  "keywords": [
+    "vue",
+    "pin"
+  ],
+  "author": "packy-tang <lpreterite@126.com> (http://github.com/lpreterite)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lpreterite/vpin/issues"
+  },
+  "homepage": "https://github.com/lpreterite/vpin#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "cross-env": "^5.2.0",
+    "mocha": "^6.1.1",
+    "rollup": "^1.9.0",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-css-only": "^1.0.0",
+    "rollup-plugin-istanbul": "^2.0.1",
+    "rollup-plugin-node-resolve": "^4.2.1",
+    "rollup-plugin-vue": "^4.7.2",
+    "rollup-watch": "^4.3.1",
+    "vue": "^2.6.10",
+    "vue-template-compiler": "^2.6.10"
+  }
+}
