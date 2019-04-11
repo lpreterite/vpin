@@ -6,6 +6,7 @@
 <script>
 import { offset, getContainer } from "./utils"
 export default {
+    name: "Pin",
     props: {
         disabled: {
             type: Boolean,
