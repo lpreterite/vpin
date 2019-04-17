@@ -11,7 +11,8 @@
     "watch": "rollup -c -w",
     "pretest": "rollup -c",
     "test": "nyc mocha",
-    "prepublish": "cross-env BUILD=production npm test"
+    "prepublish": "cross-env BUILD=production npm test",
+    "doc": "docsify serve ./docs --port 8301"
   },
   "files": [
     "dist",
