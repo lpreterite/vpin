@@ -58,8 +58,8 @@ Vue.use(vpin)
 
 | 名称            | 限制             | 描述                                                                                                |
 | --------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
-| disabled        | [Boolean]        | default: false； 盯在屏幕功能是否失效                                                               |
-| dynamic         | [Boolean]        | default: false；是否动态计算；开启后会在 window.onscroll 事件中触发 container 和 pin 组件位置到计算 |
+| disabled        | [Boolean]        | default: false；盯在屏幕功能是否失效                                                               |
+| dynamic         | [Boolean]        | default: false；是否动态计算；开启后会在 window.onscroll 事件中触发 container 和 pin 组件位置到计算 |
 | effectiveHeight | [String] [Number] | default: 0；相对于屏幕的 Y 轴定位(top)                                                              |
 | effectiveWidth  | [String] [Number] | default: 0；相对于屏幕的 X 轴定位(left)                                                             |
 | container       | [String]         | default: 'body';计算定位的父级元素标签，如果父级有使用`PinContainer`包裹，则会默认使用其为父级      |
