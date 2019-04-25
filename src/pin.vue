@@ -1,10 +1,13 @@
 <template>
     <div class="pin" :style="wrapperStyle">
-        <div class="pin__inner" :style="pinStyle"><slot></slot></div>
+        <div ref="board" class="pin__inner" :style="pinStyle"><slot></slot></div>
     </div>
 </template>
 <script>
-import { offset, getContainer } from "./utils"
+import { offset, rect, effectiveRange, getNodeLocation } from "./utils"
+const getContainer = (el='body') =>{
+    return document.querySelector(el)
+}
 export default {
     name: "Pin",
     props: {
@@ -15,14 +18,6 @@ export default {
         dynamic: {
             type: Boolean,
             default: false
-        },
-        effectiveHeight: {
-            type: [Number, String],
-            default: 0
-        },
-        effectiveWidth: {
-            type: [Number, String],
-            default: 0
         },
         container: {
             type: String,
@@ -35,23 +30,49 @@ export default {
         innerStyle: {
             type: Object,
             default: ()=>({})
+        },
+        offsetX: {
+            type: [Number, String],
+            default: 0
+        },
+        offsetY: {
+            type: [Number, String],
+            default: 0
+        },
+        scrollWith: {
+            type: String,
+            default: "" //默认不设置，horizontal 水平滚动， vertical 垂直滚动
         }
     },
     data(){
+        const offset = {x:parseInt(this.offsetX)||0, y:parseInt(this.offsetY)||0}
         return {
-            followed: false, // 当屏幕滚动至组件当前位置时跟随屏幕滚动（效果类似挂在页面上不动了）
-            suspend: false, // 当屏幕滚动出组件的父级（PinContainer）时，不再随着屏幕滚动（效果类似挂在页面上的效果失效了一样）
-            location: {
+            is_init: true,
+            effective: false,
+            offset,
+            effectiveArea: {
                 x: 0,
                 y: 0,
                 height: 0,
-                width: 0
+                width: 0,
+                offsetX: 0,
+                offsetY: 0
             },
-            containerArea: {
+            wrapper: {
                 x: 0,
                 y: 0,
                 height: 0,
-                width: 0
+                width: 0,
+                offsetX: 0,
+                offsetY: 0
+            },
+            board: {
+                rect: {
+                    x: 0,
+                    y: 0,
+                    height: 0,
+                    width: 0
+                },
             },
             style: {
                 wrapper: {
@@ -59,12 +80,14 @@ export default {
                 },
                 inner: {
                     top: 0,
+                    left: 0,
                     height: ""
                 }
             }
         }
     },
     mounted () {
+        this.is_init = false
         this.update()
         this.compute()
         this.registerEvent()
@@ -79,26 +102,27 @@ export default {
         },
         compute(){
             if(this.dynamic) this.update()
-            this.followed = window.scrollY - this.containerArea.y - this.location.y + parseInt(this.effectiveHeight) > 0
-            this.suspend = window.scrollY + parseInt(this.effectiveHeight) + this.location.height > this.containerArea.y + this.containerArea.height
-            if(this.followed && !this.suspend) this.style.inner.top = window.scrollY - this.containerArea.y + parseInt(this.effectiveHeight)
+
+            const { effective, insideX, insideY } = effectiveRange(this.wrapper, this.effectiveArea, this.offset)
+            this.effective = effective
+
+            if(this.effective){
+                this.style.inner.left = window.pageXOffset - this.effectiveArea.offsetX + this.offset.x
+                this.style.inner.top = window.pageYOffset - this.effectiveArea.offsetY + this.offset.y
+            }else{
+                if(!insideX) this.style.inner.left = this.wrapper.offsetX - this.effectiveArea.offsetX
+                if(!insideY) this.style.inner.top = this.wrapper.offsetY - this.effectiveArea.offsetY
+            }
         },
         update(){
             const $container = this.$parent.$options.name == 'PinContainer' ? this.$parent.$el : getContainer(this.container)
 
-            const location = offset(this.$el, $container)
-            this.location.x = location.x
-            this.location.y = location.y
-            this.location.height = this.$el.clientHeight
-            this.location.width = this.$el.clientWidth
-
-            const containerOffset = offset($container, document.body)
-            this.containerArea.x = containerOffset.x
-            this.containerArea.y = containerOffset.y
-            this.containerArea.height = $container.clientHeight
-            this.containerArea.width = $container.clientWidth
-
-            this.style.wrapper.height = this.$el.clientHeight
+            // update all target location
+            this.board.rect = rect(this.$refs.board)
+            this.wrapper = getNodeLocation(this.$el)
+            this.effectiveArea = getNodeLocation($container)
+            // update default style set
+            this.style.wrapper.height = this.wrapper.height
         },
         registerEvent(){
             window.addEventListener("scroll", this.onScroll)
@@ -109,11 +133,13 @@ export default {
     },
     computed: {
         pinStyle(){
+            const position = ['static','fixed', 'absolute'][!this.is_init ? (this.effective ? (this.fixed ? 1:2) : 2) : 0]
+            const top = this.scrollWith == 'vertical' ? (this.fixed ? `${this.effectiveHeight}px` : `${this.style.inner.top}px`) : undefined
+            const left = this.scrollWith == 'horizontal' ? (this.fixed ? `${this.effectiveWidth}px` : `${this.style.inner.left}px`) : undefined
             return {
-                "position": this.followed ? (this.fixed ? "fixed" : "absolute") : "static",
-                // "position": this.fixed ? "fixed" : "absolute",
-                "top": this.fixed ? `${this.effectiveHeight}px` : `${this.style.inner.top}px`,
-                "left": this.effectiveWidth+'px',
+                position,
+                top,
+                left,
                 "z-index": 99,
                 ...this.innerStyle
             }
@@ -122,6 +148,14 @@ export default {
             return {
                 "height": this.style.wrapper.height + "px"
             }
+        }
+    },
+    watch: {
+        offsetX(val){
+            this.offset = {...this.offset, x:parseInt(val)}
+        },
+        offsetY(val){
+            this.offset = {...this.offset, y:parseInt(val)}
         }
     }
 }
