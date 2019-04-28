@@ -1,6 +1,6 @@
 {
   "name": "vpin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "vue-pin component",
   "main": "dist/vpin.js",
   "module": "dist/vpin.esm.js",
@@ -11,7 +11,6 @@
     "watch": "rollup -c -w",
     "pretest": "rollup -c",
     "test": "nyc mocha",
-    "prepublish": "cross-env BUILD=production npm test",
     "doc": "docsify serve ./docs --port 8301"
   },
   "files": [

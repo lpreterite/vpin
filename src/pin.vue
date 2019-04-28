@@ -93,6 +93,7 @@ export default {
                 x: Math.min(Math.max(this.origin.x, window.pageXOffset - this.effectiveArea.offsetX + this.offset.x), xLimit),
                 y: Math.min(Math.max(this.origin.y, window.pageYOffset - this.effectiveArea.offsetY + this.offset.y), yLimit)
             }
+            console.log(this.origin, this.effectiveArea, this.offset, this.wrapper)
 
             if(this.style.inner.position === 'fixed'){
                 this.style.inner.left = this.scrollWith == 'vertical' ? this.wrapper.offsetX : this.offset.x

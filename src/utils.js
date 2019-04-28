@@ -29,8 +29,8 @@ export const screen = (el, container)=>{
 export const rect = el => {
     const rect = el.getBoundingClientRect()    
     return {
-        x: rect.x,
-        y: rect.y,
+        x: rect.x || rect.left,
+        y: rect.y || rect.top,
         width: rect.width,
         height: rect.height
     }
