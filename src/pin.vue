@@ -4,7 +4,7 @@
     </div>
 </template>
 <script>
-import { offset, screen, effectiveRange, getNodeLocation } from "./utils"
+import { offset, matchRange, getNodeLocation } from "./utils"
 const getContainer = (el='body') =>{
     return document.querySelector(el)
 }
@@ -26,7 +26,7 @@ export default {
         },
         fixed: {
             type: Boolean,
-            default: false
+            default: true
         },
         innerStyle: {
             type: Object,
@@ -53,6 +53,7 @@ export default {
             effectiveArea: rangeSchema(),
             wrapper: rangeSchema(),
             board: rangeSchema(),
+            origin: {x:0,y:0},
             style: {
                 wrapper: {
                     height: ""
@@ -84,13 +85,13 @@ export default {
         compute(){
             if(this.dynamic) this.update()
 
-            const { effective, x, y, xLimit, yLimit } = effectiveRange(this.wrapper, this.effectiveArea, this.offset) //基于页面坐标计算位置，并反馈是否在特定范围内
+            const { effective, x, y, xLimit, yLimit } = matchRange(this.wrapper, this.effectiveArea, this.offset) //基于页面坐标计算位置，并反馈是否在特定范围内
             this.effective = effective
 
             this.style.inner.position = ['fixed', 'absolute'][this.effective && this.fixed ? 0:1]
             const movement = {
-                x: Math.min(Math.max(x - this.effectiveArea.offsetX, window.pageXOffset - this.effectiveArea.offsetX + this.offset.x), xLimit),
-                y: Math.min(Math.max(y - this.effectiveArea.offsetY, window.pageYOffset - this.effectiveArea.offsetY + this.offset.y), yLimit)
+                x: Math.min(Math.max(this.origin.x, window.pageXOffset - this.effectiveArea.offsetX + this.offset.x), xLimit),
+                y: Math.min(Math.max(this.origin.y, window.pageYOffset - this.effectiveArea.offsetY + this.offset.y), yLimit)
             }
 
             if(this.style.inner.position === 'fixed'){
@@ -100,8 +101,8 @@ export default {
                 this.style.inner.left = movement.x
                 this.style.inner.top = movement.y
             }else{ //失效时进入，这里有两种情况：1未曾生效; 2曾生效又出去范围后失效
-                this.style.inner.left = window.pageXOffset > x ? Math.min(movement.x, xLimit) : this.wrapper.offsetX - this.effectiveArea.offsetX
-                this.style.inner.top = window.pageYOffset > y ? Math.min(movement.y, yLimit) : this.wrapper.offsetY - this.effectiveArea.offsetY
+                this.style.inner.left = window.pageXOffset > x ? Math.min(movement.x, xLimit) : this.origin.x
+                this.style.inner.top = window.pageYOffset > y ? Math.min(movement.y, yLimit) : this.origin.y
             }
         },
         update(){
@@ -111,6 +112,7 @@ export default {
             this.board = getNodeLocation(this.$refs.board)
             this.wrapper = getNodeLocation(this.$el)
             this.effectiveArea = getNodeLocation($container)
+            this.origin = {x:this.wrapper.x-this.effectiveArea.x,y:this.wrapper.y-this.effectiveArea.y}
             // update default style set
             this.style.wrapper.height = this.board.height
             this.style.inner.height =  this.board.height

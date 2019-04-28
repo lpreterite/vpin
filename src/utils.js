@@ -36,7 +36,7 @@ export const rect = el => {
     }
 }
 
-export const effectiveRange = (target, range, offset={x:0,y:0}) => {
+export const matchRange = (target, range, offset={x:0,y:0}) => {
     const x = target.offsetX - offset.x
     const y = target.offsetY - offset.y
     const xLimit = range.offsetX + range.width - offset.x - target.width
@@ -53,8 +53,4 @@ export const effectiveRange = (target, range, offset={x:0,y:0}) => {
 export const getNodeLocation = el => {
     const {x:offsetX, y:offsetY} = offset(el)
     return {...rect(el), offsetX, offsetY}
-}
-
-export const getContainer = (el='body') =>{
-    return document.querySelector(el)
 }
