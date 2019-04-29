@@ -20,10 +20,7 @@ export default {
             type: Boolean,
             default: false
         },
-        container: {
-            type: String,
-            default: ()=> 'body'
-        },
+        container: String,
         fixed: {
             type: Boolean,
             default: true
@@ -43,7 +40,8 @@ export default {
         scrollWith: {
             type: String,
             default: "vertical" //horizontal 水平滚动， vertical 垂直滚动，不设置将使用offset的值
-        }
+        },
+        overflow: Boolean
     },
     data(){
         return {
@@ -86,14 +84,13 @@ export default {
             if(this.dynamic) this.update()
 
             const { effective, x, y, xLimit, yLimit } = matchRange(this.wrapper, this.effectiveArea, this.offset) //基于页面坐标计算位置，并反馈是否在特定范围内
-            this.effective = effective
+            this.effective = !this.overflow ? effective : window.pageXOffset > x || window.pageYOffset > y
 
             this.style.inner.position = ['fixed', 'absolute'][this.effective && this.fixed ? 0:1]
             const movement = {
                 x: Math.min(Math.max(this.origin.x, window.pageXOffset - this.effectiveArea.offsetX + this.offset.x), xLimit),
                 y: Math.min(Math.max(this.origin.y, window.pageYOffset - this.effectiveArea.offsetY + this.offset.y), yLimit)
             }
-            console.log(this.origin, this.effectiveArea, this.offset, this.wrapper)
 
             if(this.style.inner.position === 'fixed'){
                 this.style.inner.left = this.scrollWith == 'vertical' ? this.wrapper.offsetX : this.offset.x
@@ -107,7 +104,7 @@ export default {
             }
         },
         update(){
-            const $container = this.$parent.$options.name == 'PinContainer' ? this.$parent.$el : getContainer(this.container)
+            const $container = !this.container && this.$parent.$options.name == 'PinContainer' ?  this.$parent.$el : getContainer(this.container)
 
             // update all target location
             this.board = getNodeLocation(this.$refs.board)

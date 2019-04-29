@@ -10,8 +10,8 @@
 
 ## 具体功能
 
-- 当屏幕滚动过组件位置，组件会根据设置固定在屏幕的相对位置上
-- 当屏幕滚动过 pin 组件的父级组件，pin 组件不会再固定于屏幕的相对位置上，固定功能将会失效
+-   当屏幕滚动过组件位置，组件会根据设置固定在屏幕的相对位置上
+-   当屏幕滚动过 pin 组件的父级组件，pin 组件不会再固定于屏幕的相对位置上，固定功能将会失效
 
 ## 如何安装
 
@@ -56,16 +56,17 @@ Vue.use(vpin)
 
 ### 包含属性(Props)
 
-| 名称            | 限制             | 描述                                                                                                |
-| --------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
-| disabled        | [Boolean]        | default: false；盯在屏幕功能是否失效                                                                |
-| dynamic         | [Boolean]        | default: false；是否动态计算；开启后会在 window.onscroll 事件中触发 container 和 pin 组件位置到计算 |
-| offsetX | [String][Number] | default: 0；相对于屏幕的 Y 轴定位(top)的偏移值                                                              |
-| offsetY  | [String][Number] | default: 0；相对于屏幕的 X 轴定位(left)的偏移值                                                             |
-| container       | [String]         | default: 'body';计算定位的父级元素标签，如果父级有使用`PinContainer`包裹，则会默认使用其为父级      |
-| fixed           | [Boolean]        | default: true; 是否开启基于屏幕定位计算                                                            |
-| innerStyle      | [Object]         | default: {}; 盯在屏幕的元素的额外样式                                                               |
-| scrollWith(`new`)           | [String]        | default: "vertical", 可选 `horizontal` 水平滚动， `vertical` 垂直滚动; 根据滚动方向进行定位处理，只用于`fixed`为`true`时，不期望做任何优化时，可存入空字符。 |
+| 名称              | 限制             | 描述                                                                                                                                                         |
+| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| disabled          | [Boolean]        | default: false；钉在屏幕功能是否失效                                                                                                                         |
+| dynamic           | [Boolean]        | default: false；是否动态计算；开启后会在 window.onscroll 事件中触发 container 和 pin 组件位置到计算                                                          |
+| offsetX           | [String][number] | default: 0；相对于屏幕的 Y 轴定位(top)的偏移值                                                                                                               |
+| offsetY           | [String][number] | default: 0；相对于屏幕的 X 轴定位(left)的偏移值                                                                                                              |
+| container         | [String]         | default: 'body';计算定位的父级元素标签，如果父级有使用`PinContainer`包裹，则会默认使用其为父级                                                               |
+| fixed             | [Boolean]        | default: true; 是否开启基于屏幕定位计算                                                                                                                      |
+| innerStyle        | [Object]         | default: {}; 钉在屏幕的元素的额外样式                                                                                                                        |
+| scrollWith(`new`) | [String]         | default: "vertical", 可选 `horizontal` 水平滚动， `vertical` 垂直滚动; 根据滚动方向进行定位处理，只用于`fixed`为`true`时，不期望做任何优化时，可存入空字符。 |
+| overflow(`new`)   | [Boolean]        | default: false, 出范围后是否继续钉在屏幕；设置`true`后当超出范围后将继续钉在屏幕上                                                                           |
 
 ### 包含函数
 
@@ -73,9 +74,9 @@ Vue.use(vpin)
 
 获取元素基于页面的定位
 
-| 参数      | 限制            | 描述         |
-| --------- | --------------- | ------------ |
-| el        | 必须；[HTML Element] | 要计算的元素 |
+| 参数 | 限制                 | 描述         |
+| ---- | -------------------- | ------------ |
+| el   | 必须；[HTML Element] | 要计算的元素 |
 
 用法
 
@@ -90,8 +91,8 @@ console.log(_offset)
 
 获取元素位置
 
-| 参数 | 限制                | 描述         |
-|------|-------------------|------------|
+| 参数 | 限制                 | 描述         |
+| ---- | -------------------- | ------------ |
 | el   | 必须，[HTML Element] | 要计算的元素 |
 
 用法
@@ -107,8 +108,8 @@ console.log(_location)
 
 匹配有效范围
 
-| 参数   | 限制          | 描述                                                                                 |
-|--------|-------------|------------------------------------------------------------------------------------|
+| 参数   | 限制           | 描述                                                                                  |
+| ------ | -------------- | ------------------------------------------------------------------------------------- |
 | target | 必须；[Object] | 要测试对象，包含以下字段`{ x: 0, y: 0, height: 0, width: 0, offsetX: 0, offsetY: 0 }` |
 | range  | 必须；[Object] | 有效范围，包含以下字段`{ x: 0, y: 0, height: 0, width: 0, offsetX: 0, offsetY: 0 }`   |
 | offset | 可选；[Object] | 偏移量，包含以下字段`{ x: 0, y: 0 }`                                                  |
@@ -118,5 +119,5 @@ console.log(_location)
 ```js
 import { matchRange } from "vpin"
 const { effective, x, y, xLimit, yLimit } = matchRange({}, {})
-console.log(`是否在有效范围：%s; 范围：%s, %s, %s, %s`, effective?'是':'否', x, y, xLimit, yLimit )
+console.log(`是否在有效范围：%s; 范围：%s, %s, %s, %s`, effective ? "是" : "否", x, y, xLimit, yLimit)
 ```
