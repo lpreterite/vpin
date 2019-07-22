@@ -117,9 +117,11 @@ export default {
             this.style.inner.width =  this.board.width
         },
         registerEvent(){
+            window.addEventListener("resize", this.onScroll)
             window.addEventListener("scroll", this.onScroll)
         },
         destroyEvent(){
+            window.removeEventListener("resize", this.onScroll)
             window.removeEventListener("scroll", this.onScroll)
         }
     },

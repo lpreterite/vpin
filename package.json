@@ -1,6 +1,6 @@
 {
   "name": "vpin",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "vue-pin component",
   "main": "dist/vpin.js",
   "module": "dist/vpin.esm.js",
