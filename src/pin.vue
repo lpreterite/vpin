@@ -86,7 +86,7 @@ export default {
             const { effective, x, y, xLimit, yLimit } = matchRange(this.wrapper, this.effectiveArea, this.offset) //基于页面坐标计算位置，并反馈是否在特定范围内
             this.effective = !this.overflow ? effective : window.pageXOffset > x || window.pageYOffset > y
 
-            this.style.inner.position = ['fixed', 'absolute'][this.effective && this.fixed ? 0:1]
+            this.style.inner.position = ['fixed', 'absolute','static'][this.disabled ? 2 : (this.effective && this.fixed ? 0:1)]
             const movement = {
                 x: Math.min(Math.max(this.origin.x, window.pageXOffset - this.effectiveArea.offsetX + this.offset.x), xLimit),
                 y: Math.min(Math.max(this.origin.y, window.pageYOffset - this.effectiveArea.offsetY + this.offset.y), yLimit)
@@ -112,16 +112,16 @@ export default {
             this.effectiveArea = getNodeLocation($container)
             this.origin = {x:this.wrapper.x-this.effectiveArea.x,y:this.wrapper.y-this.effectiveArea.y}
             // update default style set
-            this.style.wrapper.height = this.board.height
-            this.style.inner.height =  this.board.height
-            this.style.inner.width =  this.board.width
+            this.style.wrapper.height = this.disabled ? 'auto' : this.board.height
+            this.style.inner.height = this.disabled ? 'auto' : this.board.height
+            this.style.inner.width = this.disabled ? 'auto' : this.board.width
         },
         registerEvent(){
-            window.addEventListener("resize", this.onScroll)
+            window.addEventListener("resize", this.compute)
             window.addEventListener("scroll", this.onScroll)
         },
         destroyEvent(){
-            window.removeEventListener("resize", this.onScroll)
+            window.removeEventListener("resize", this.compute)
             window.removeEventListener("scroll", this.onScroll)
         }
     },
