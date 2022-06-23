@@ -123,3 +123,13 @@ import { matchRange } from "vpin"
 const { effective, x, y, xLimit, yLimit } = matchRange({}, {})
 console.log(`是否在有效范围：%s; 范围：%s, %s, %s, %s`, effective ? "是" : "否", x, y, xLimit, yLimit)
 ```
+
+## Develop
+
+本地调试
+
+```sh
+$ npm run serve
+# or
+$ yarn serve
+```

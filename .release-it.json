@@ -1,0 +1,30 @@
+{
+  "git": {
+    "commitMessage": "ci: 更新版本至 ${version} | [CI SKIP]"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "infile": "CHANGELOG.md",
+      "header": "# 更新日志\n\n本文件将由[release-it](https://github.com/release-it/release-it)工具根据[约定式提交规范](https://www.conventionalcommits.org/zh-hans/v1.0.0/)下自动产出更新日志内容。\n\n> 更详细内容可查看文章[《自动产出changelog-第二节：自动产出》](https://uxfeel.com/2021/04/13/20210413-auto-changelog-section-two-generate-changelog/)\n\n---\n\n",
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "✨ Features | 新功能" },
+          { "type": "fix", "section": "🐛 Bug Fixes | Bug 修复" },
+          { "type":"perf", "section":"⚡ Performance Improvements | 性能优化" },
+          { "type": "revert", "section": "⏪ Reverts | 回退" },
+          { "type": "chore", "section": "📦 Chores | 其他更新" },
+          { "type": "docs", "section": "📝 Documentation | 文档" },
+          { "type": "style", "section": "💄 Styles | 风格", "hidden": true },
+          { "type": "refactor", "section": "♻ Code Refactoring | 代码重构" },
+          { "type": "test", "section": "✅ Tests | 测试" },
+          { "type": "build", "section": "👷‍ Build System | 构建" },
+          { "type": "ci", "section": "🔧 Continuous Integration | CI 配置" }
+        ],
+        "commitUrlFormat": "https://github.com/lpreterite/vpin/commit/{{hash}}",
+        "issueUrlFormat": "https://github.com/lpreterite/vpin/issues/{{id}}",
+        "compareUrlFormat": "https://github.com/lpreterite/vpin/compare/{{previousTag}}...{{currentTag}}"
+      }
+    }
+  }
+}

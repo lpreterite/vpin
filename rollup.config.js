@@ -1,46 +1,75 @@
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import vue from 'rollup-plugin-vue'
-import css from 'rollup-plugin-css-only'
-import { terser } from 'rollup-plugin-terser'
-import babel from 'rollup-plugin-babel'
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import babel from "@rollup/plugin-babel";
+import { terser } from "rollup-plugin-terser";
 
-import pkg from './package.json'
+import vue from "rollup-plugin-vue";
+import css from "rollup-plugin-css-only";
 
-const sourcemap = true
+import pkg from "./package.json";
 
-const plugins = []
-if(process.env.BUILD === 'production'){
-	plugins.push(terser({ sourcemap }))
-}
+const name = "vpin";
+
+const plugins = [
+  resolve(),
+  commonjs(),
+  vue({ css: false }),
+  css({ output: `${name}.css` })
+];
+/**
+ * key为包名称，value为全局引用的值
+ * example: const globals = { jquery: "$" };
+ */
+const globals = {};
 
 export default [
-	{
-		input: 'src/main.js',
-		output: [
-			{ name: 'vpin', file: pkg.main, format: 'cjs', exports: 'named', sourcemap },
-			{ name: 'vpin', file: pkg.module, format: 'es', exports: 'named', sourcemap }
-		],
-        plugins: [
-			resolve(),
-            commonjs(),
-			css(),
-			vue({ css: false }),
-			...plugins
-        ]
-	},
-	{
-		input: 'src/main.js',
-		output: [
-            { name: 'vpin', file: pkg.pkg, format: 'umd', exports: 'named', sourcemap },
-		],
-        plugins: [
-			resolve(),
-            commonjs(),
-			css(),
-			vue({ css: false }),
-			babel({ exclude: 'node_modules/**', runtimeHelpers: true }),
-			...plugins
-		]
-	}
-]
+  {
+    input: "src/main.js",
+    output: [
+      { //cjs setting
+        name,
+        file: pkg.main,
+        format: "cjs",
+        exports: "named",
+        globals
+      },
+      { //esm setting
+        name,
+        file: pkg.module,
+        format: "es",
+        exports: "named",
+        globals
+      },
+    ],
+    plugins,
+    external: Object.keys(globals),
+  },
+  {
+    input: "src/brower.js",
+    output: [
+      { //umd setting
+        name:name.replace("-","_"),
+        file: `dist/${name}.umd.js`,
+        format: "umd",
+        exports: "named",
+        extend: true,
+        compact: true
+      },
+    ],
+    plugins: [...plugins, babel()]
+  },
+  {
+    input: "src/brower.js",
+    output: [
+      { //umd setting
+        name:name.replace("-","_"),
+        file: `dist/${name}.umd.min.js`,
+        format: "umd",
+        exports: "named",
+        extend: true,
+        compact: true
+      },
+    ],
+    plugins: [...plugins, babel(), terser({ output: { comments: false } })]
+  }
+];

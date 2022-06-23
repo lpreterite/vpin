@@ -1,24 +1,19 @@
-import Pin from "./Pin.vue"
-import PinContainer from "./PinContainer.vue"
+import Pin from "./components/Pin.vue"
+import PinContainer from "./components/PinContainer.vue"
 export * from "./utils"
 export { Pin, PinContainer }
 
-class VuePlugin{
-    constructor(){
-        const { prefix } = { prefix: "" }
-        this.prefix = prefix;
+export default function({prefix=""}={}){
+  return {
+    install(Vue){
+      const components = {
+          Pin,
+          PinContainer
+      }
+      Object.keys(components).forEach(key => {
+          const component = components[key];
+          Vue.component(prefix+component.name, component);
+      });
     }
-    install(Vue, options={}){
-        const prefix = options.prefix || this.prefix
-        const components = {
-            Pin,
-            PinContainer
-        }
-        Object.keys(components).forEach(key => {
-            const component = components[key];
-            Vue.component(prefix+component.name, component);
-        });
-    }
+  }
 }
-
-export default new VuePlugin()

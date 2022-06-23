@@ -4,7 +4,7 @@
     </div>
 </template>
 <script>
-import { offset, matchRange, getNodeLocation } from "./utils"
+import { offset, matchRange, getNodeLocation } from "../utils"
 const getContainer = (el='body') =>{
     return document.querySelector(el)
 }
