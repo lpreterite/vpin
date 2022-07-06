@@ -34,11 +34,18 @@
 
 视觉效果中固定元素参考物是屏幕，实际计算时固定元素实际基于文档(Document)来移动，不动的却是文档（Document）。由此逻辑来推理各个计算要素的性质：
 
-- 屏幕宽高：常量，在定位计算过程中是不变的。
-- 屏幕滚动位置：变量，在滚动时就会有变化。
-- 文档宽高：常量，在定位计算过程中一般是不变的，除非有元素撑高导致变化。
+- 屏幕宽高：全局常量，在定位计算过程中是不变的。
+- 屏幕滚动位置：全局变量，在滚动时就会有变化。
+- 文档宽高：全局常量，在定位计算过程中一般是不变的，除非有元素撑高导致变化。
 - 固定元素宽高：常量，在定位计算过程中一般是不变的。
 - 固定元素位置：变量，通过[Element.getBoundingClientRect()](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect)方法获得相对于屏幕的位置。
+
+获得基于Document下定位的计算公式如下：
+
+```js
+// 基于Document定位Y轴  =  视觉参照物的Y轴滚动变量       +       视觉参照物的高         -        定位目标对象高
+let top                = window.pageYOffset + document.documentElement.clientHeight - element.height
+```
 
 计算后的固定元素位置：根据元素`position`样式不同影响其值的计算是不同的。具体看下面 固定元素位置定位计算情况。
 
@@ -79,3 +86,85 @@
 5. 抽离固定元素至Document
 
 滚动窗口时，执行234步即可。
+
+
+## 定义
+
+代码上有以下要素：
+
+- Document 文档
+- Window 视窗
+- Element 定位元素
+
+计算定位时，存在以下这些抽象：
+
+- 视觉参照物：某个可视范围。常常是视窗，内部是可滑动的内容。一般情况是视窗内容多于视窗本身。
+- 观测对象：滑动内容时，在视觉上是不动的。这不懂是以包裹滑动内容的视窗为参照。
+- 作用范围参照物：指定位计算生效的范围。当观测对象移动至范围边界时，定位计算将停止，观测对象将停留在范围边界。
+- 定位参照物：指样式定位的参照物。一般情况为视觉参照物内部的内容。
+
+![](https://s2.loli.net/2022/07/01/BPrUMslLEtkqNZw.jpg)
+<视觉参照物 与 定位参照物关系>
+
+获得定位位置的具体公式如下：
+
+```md
+定位值 = 滚动偏移 + 视觉参照物尺寸
+```
+
+具体计算由于不同诉求，带来更多额外的变量，大多是下面这种情况：
+
+```md
+定位值 = 滚动偏移 + 视觉参照物尺寸 - 变量
+```
+
+## 场景
+
+### 场景1
+
+![](https://s2.loli.net/2022/07/01/o2tpTGQ1mjgXr54.png)
+<右侧内容固定不变>
+
+假设要实现上面效果，需要给与几样东西下定义。
+
+![](https://s2.loli.net/2022/07/01/MFJLd9sqKu2ZjCU.png)
+<各要素定义>
+
+计算公式：
+
+```js
+//获得对象基于视窗的定位
+const rect = document.querySelector("[定位对象]").getBoundingClientRect()
+
+const poinY                                   // 基于定位参照物的Y轴位置
+       = document.documentElement.scrollTop   // 滚动偏移
+       + rect.y                               // 基于视窗的Y轴位置
+```
+
+公式可用的前提是，具备以下条件：
+
+- 期望效果为不动。
+- 定位对象（观测对象）已在期望位置。
+
+#### 基于视觉参照物给定位置的计算
+
+比如上面定位，给出基于视窗的距离是最为直观的，在这种情况下可用计算公式如下：
+
+```js
+//获得对象基于视窗的定位
+const rect = document.querySelector("[定位对象]").getBoundingClientRect()
+
+// 基于顶部定位
+const poinY1                                  // 基于定位参照物的Y轴位置
+       = document.documentElement.scrollTop   // 滚动偏移
+       + 200                                  // 与顶部的距离
+
+// 基于底部定位
+const poinY2                                   // 基于定位参照物的Y轴位置
+       = document.documentElement.scrollTop    // 滚动偏移
+       + document.documentElement.clientHeight // 视窗高度
+       - rect.height                           // 观察物高度
+       - 200                                   // 与底部的距离
+```
+
+
