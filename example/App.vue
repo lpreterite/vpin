@@ -24,7 +24,7 @@
       <div v-else class="inner">
         <nav>
           <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
-          <div class="nav" v-pin.offset="{ container:'.inner', offsetTop:0, offsetLeft:0 }">
+          <div class="nav" v-pin="{ container:'.inner', offsetTop:0, offsetLeft:0 }">
             <ul>
               <li><a href="#学而篇">学而篇</a></li>
               <li><a href="#为政篇">为政篇</a></li>

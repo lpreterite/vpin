@@ -112,8 +112,15 @@ export function Pin(options={}){
   function _render(){
     if(fixed) return
 
-    const movementX = Math.max(_screens.container.x, Math.min(_screens.container.x+_screens.container.width, _reference.scrollLeft + _screens.target.x))
-    const movementY = Math.max(_screens.container.y, Math.min(_screens.container.y+_screens.container.height, _reference.scrollTop + _screens.target.y))
+    const _offset = _offsetFormula(_screens.target, _screens.container, offset)
+    // console.log("_render", _offset)
+    // const offsetX = _reference.scrollLeft > _screens.container.x ? _reference.scrollLeft + _offset.x : _screens.target.x
+    // const offsetY = _reference.scrollTop > _screens.container.y ? _reference.scrollTop + _offset.y : _screens.target.y
+    const offsetX = _reference.scrollLeft + _offset.x
+    const offsetY = _reference.scrollTop + _offset.y
+
+    const movementX = Math.max(_screens.container.x, Math.min(_screens.container.x+_screens.container.width, offsetX))
+    const movementY = Math.max(_screens.container.y, Math.min(_screens.container.y+_screens.container.height, offsetY))
 
     _target.style.position = "absolute"
     // if(_reference.scrollLeft >= _screens.container.x){
@@ -137,6 +144,44 @@ export function Pin(options={}){
   }
 
   /**
+   * 根据范围元素计算偏移量
+   *
+   * @param {*} target
+   * @param {*} container
+   * @param {*} offset
+   * @returns
+   */
+  function _offsetFormula(target, container, offset){
+    const xFormula = [
+      container.x + offset.left, //按Left偏移计算
+      container.x + container.width - offset.right,  //按Right偏移计算
+      target.x //按元素当前位置计算
+    ][
+      [
+        Number.isNaN(offset.left) && Number.isNaN(offset.right) ? 2 : false,
+        Number.isNaN(offset.left) ? false : 0,
+        Number.isNaN(offset.right) ? false : 1,
+      ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
+    ]
+    const yFormula = [
+      container.y + offset.top, //按Top偏移计算
+      container.y + container.height - offset.bottom,  //按Bottom偏移计算
+      target.y //按元素当前位置计算
+    ][
+      [
+        Number.isNaN(offset.top) && Number.isNaN(offset.bottom) ? 2 : false,
+        Number.isNaN(offset.top) ? false : 0,
+        Number.isNaN(offset.bottom) ? false : 1,
+      ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
+    ]
+
+    return {
+      x: xFormula,
+      y: yFormula
+    }
+  }
+
+  /**
    * 度量位置大小
    *
    * @param {*} el
@@ -150,37 +195,18 @@ export function Pin(options={}){
     el.style.left = ""
     el.style.bottom = ""
     el.style.right = ""
+    el.style.height = ""
+    el.style.width = ""
 
     // 获得位置信息
     const rect = el.getBoundingClientRect()
 
     if(offsetOn){
-      const xFormula = [
-        _reference.scrollLeft + _screens.container.x + offset.left, //按Left偏移计算
-        _reference.scrollLeft + _screens.container.x + _screens.container.width - offset.right,  //按Right偏移计算
-        _reference.scrollLeft + rect.y //按元素当前位置计算
-      ][
-        [
-          Number.isNaN(offset.left) && Number.isNaN(offset.right) ? 2 : false,
-          Number.isNaN(offset.left) ? false : 0,
-          Number.isNaN(offset.right) ? false : 1,
-        ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
-      ]
-      const yFormula = [
-        _reference.scrollTop + _screens.container.y + offset.top, //按Top偏移计算
-        _reference.scrollTop + _screens.container.y + _screens.container.height - offset.bottom,  //按Bottom偏移计算
-        _reference.scrollTop + rect.y //按元素当前位置计算
-      ][
-        [
-          Number.isNaN(offset.top) && Number.isNaN(offset.bottom) ? 2 : false,
-          Number.isNaN(offset.top) ? false : 0,
-          Number.isNaN(offset.bottom) ? false : 1,
-        ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
-      ]
+      const _offset = _offsetFormula(rect, _screens.container,offset)
 
       // 登记基于参照物的位置信息
-      _screens.target.x = xFormula
-      _screens.target.y = yFormula
+      _screens.target.x = _reference.scrollLeft + _offset.x
+      _screens.target.y = _reference.scrollTop + _offset.y
       _screens.target.height = rect.height
       _screens.target.width = rect.width
     }else{
@@ -204,6 +230,8 @@ export function Pin(options={}){
       el.style.left = `${_screens.target.x}px`
       el.style.bottom = "auto"
       el.style.right = "auto"
+      el.style.height = `${_screens.target.height}px`
+      el.style.width = `${_screens.target.width}px`
     }
     el.style.zIndex = zIndex
 
