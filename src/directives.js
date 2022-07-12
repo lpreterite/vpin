@@ -7,7 +7,7 @@ export default function({debug=false}=opts) {
     if(debug) window.pin = pin
 
     function setting(binding){
-      const { fixed, offset:offsetOn } = binding.modifiers || {}
+      const { fixed, offset:offsetOn, limit } = binding.modifiers || {}
       const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight } = binding.value || {}
       pin.fixed = fixed
       pin.throttleOn = throttleOn
@@ -17,6 +17,7 @@ export default function({debug=false}=opts) {
       pin.offsetBottom = offsetBottom
       pin.offsetLeft = offsetLeft
       pin.offsetRight = offsetRight
+      pin.limit = limit
     }
 
     function bind(el, binding){
