@@ -27,7 +27,7 @@ export const screen = (el, container)=>{
 }
 
 export const rect = el => {
-    const rect = el.getBoundingClientRect()    
+    const rect = el.getBoundingClientRect()
     return {
         x: rect.x || rect.left,
         y: rect.y || rect.top,
@@ -53,4 +53,358 @@ export const matchRange = (target, range, offset={x:0,y:0}) => {
 export const getNodeLocation = el => {
     const {x:offsetX, y:offsetY} = offset(el)
     return {...rect(el), offsetX, offsetY}
+}
+
+import throttle from 'lodash.throttle'
+export { throttle }
+
+/**
+ * 定位计算对象
+ *
+ * @param {*} [options={}]
+ * @class
+ */
+export function Pin(options={}){
+  const _stage = window
+       ,_screens={
+          target: { x:0, y:0, width:0, height:0 },
+          container: { x:0, y:0, width:0, height:0 },
+       }
+       ,_events = {
+          resize: undefined,
+          scroll: undefined
+      }
+  let _targetParent;
+
+  let {
+    container,
+    target,
+    fixed=false,
+    throttleOn=false,
+    throttleWait=250,
+    originPoint={x:0,y:0},
+    offsetOn=false,
+    offset={top:Number.NaN,left:Number.NaN,bottom:Number.NaN,right:Number.NaN}
+  } = options
+
+  function _initEvent(){
+    _events.scroll = throttleOn ? throttle(_onScroll, throttleWait, {}) : _onScroll //移除了更实时了
+    _events.resize = _onResize
+  }
+  function _bindEvent(){
+    _scrollEl.addEventListener('scroll', _events.scroll)
+    _stage.addEventListener('resize', _events.resize)
+  }
+  function _unBindEvent(){
+    _scrollEl.removeEventListener('scroll', _events.scroll)
+    _stage.removeEventListener('resize', _events.resize)
+  }
+
+  function _onScroll(event){
+    _render()
+  }
+
+  function _onResize(event){
+    _locate(_target)
+    _render()
+  }
+
+  function _render(){
+    if(fixed) return
+
+    const movementX = Math.max(_screens.container.x, Math.min(_screens.container.x+_screens.container.width, _reference.scrollLeft + _screens.target.x))
+    const movementY = Math.max(_screens.container.y, Math.min(_screens.container.y+_screens.container.height, _reference.scrollTop + _screens.target.y))
+
+    _target.style.position = "absolute"
+    // if(_reference.scrollLeft >= _screens.container.x){
+      _target.style.left = `${movementX}px`
+    // }
+    // if(_reference.scrollTop >= _screens.container.y){
+      _target.style.top = `${movementY}px`
+    // }
+    _target.style.bottom = "auto"
+    _target.style.right = "auto"
+  }
+
+  function _locateContainer(el){// 获得位置信息
+    const rect = el.getBoundingClientRect()
+
+    // 登记基于参照物的位置信息
+    _screens.container.x = _reference.scrollLeft + rect.x
+    _screens.container.y = _reference.scrollTop + rect.y
+    _screens.container.height = rect.height
+    _screens.container.width = rect.width
+  }
+
+  /**
+   * 度量位置大小
+   *
+   * @param {*} el
+   * @param {number} [zIndex=999]
+   * @returns
+   */
+  function _locate(el, zIndex=999){
+    // 清空定位样式，使其按默认样式进行布局
+    el.style.position = ""
+    el.style.top = ""
+    el.style.left = ""
+    el.style.bottom = ""
+    el.style.right = ""
+
+    // 获得位置信息
+    const rect = el.getBoundingClientRect()
+
+    if(offsetOn){
+      const xFormula = [
+        _reference.scrollLeft + _screens.container.x + offset.left, //按Left偏移计算
+        _reference.scrollLeft + _screens.container.x + _screens.container.width - offset.right,  //按Right偏移计算
+        _reference.scrollLeft + rect.y //按元素当前位置计算
+      ][
+        [
+          Number.isNaN(offset.left) && Number.isNaN(offset.right) ? 2 : false,
+          Number.isNaN(offset.left) ? false : 0,
+          Number.isNaN(offset.right) ? false : 1,
+        ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
+      ]
+      const yFormula = [
+        _reference.scrollTop + _screens.container.y + offset.top, //按Top偏移计算
+        _reference.scrollTop + _screens.container.y + _screens.container.height - offset.bottom,  //按Bottom偏移计算
+        _reference.scrollTop + rect.y //按元素当前位置计算
+      ][
+        [
+          Number.isNaN(offset.top) && Number.isNaN(offset.bottom) ? 2 : false,
+          Number.isNaN(offset.top) ? false : 0,
+          Number.isNaN(offset.bottom) ? false : 1,
+        ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
+      ]
+
+      // 登记基于参照物的位置信息
+      _screens.target.x = xFormula
+      _screens.target.y = yFormula
+      _screens.target.height = rect.height
+      _screens.target.width = rect.width
+    }else{
+      // 登记基于参照物的位置信息
+      _screens.target.x = _reference.scrollLeft + rect.x
+      _screens.target.y = _reference.scrollTop + rect.y
+      _screens.target.height = rect.height
+      _screens.target.width = rect.width
+    }
+
+    // 重新给与定位样式设置
+    if(fixed){
+      el.style.position = "fixed"
+      el.style.top = rect.y+"px"
+      el.style.left = rect.x+"px"
+      el.style.bottom = "auto"
+      el.style.right = "auto"
+    }else{
+      el.style.position = "absolute"
+      el.style.top = `${_screens.target.y}px`
+      el.style.left = `${_screens.target.x}px`
+      el.style.bottom = "auto"
+      el.style.right = "auto"
+    }
+    el.style.zIndex = zIndex
+
+    return el
+  }
+
+  function destroy(){
+    // const nodeIterator = document.createNodeIterator(
+    //     _reference,
+    //     NodeFilter.SHOW_COMMENT
+    // );
+    // while (nodeIterator.nextNode()) {
+    //   const commentNode = nodeIterator.referenceNode
+    //   console.log(commentNode,commentNode.parentNode,_targetParent)
+    //   if(commentNode.textContent!=`vpin::${_target.dataset['pkey']}`) continue;
+    //   // commentNode.parentNode.replaceChild(_targetParent, commentNode);
+    //   _targetParent.replaceChild(_target, commentNode)
+    // }
+    _target.remove()
+    _unBindEvent()
+  }
+
+  let _container=document.documentElement
+  function containsIn(val=document.documentElement){
+    if(typeof val == 'string'){
+      val = document.documentElement.querySelector(val)
+    }
+    if((val||{}).nodeType != 1) throw new Error('container 并不是元素节点对象!')
+    _container = val
+    _locateContainer(val)
+    return ctx
+  }
+
+  let _reference = document.documentElement
+     ,_scrollEl = _reference.parentNode
+
+  /**
+   * 设置参考物
+   * @description 设置时同时会绑定scroll事件进行监控
+   * @memberof Pin
+   * @param {*} [val=document.documentElement]
+   * @returns
+   */
+  function referTo(val=document.documentElement){
+    if(typeof val == 'string'){
+      val = document.documentElement.querySelector(val)
+    }
+    if((val||{}).nodeType != 1) throw new Error('reference 并不是元素节点对象!')
+    _reference = val
+    _scrollEl = _reference.parentNode
+    _unBindEvent()
+    _bindEvent()
+    return ctx
+  }
+
+  let _target;
+  function pinUp(el, options={}){
+    if(typeof el == 'undefined') throw new Error('el 是必须的!')
+    if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
+
+    _target = el
+
+    Object
+      .keys(options)
+      .forEach(key=>{
+        if(typeof ctx[key] == 'undefined') return
+        ctx[key] = options[key]
+      })
+  }
+
+  /**
+   * 转移对象
+   *
+   * @description 转移对象到参照元素板块
+   * @memberof Pin
+   * @param {*} [el=_target]
+   * @param {*} [reference=_reference]
+   */
+  function transfer(el=_target, reference=_reference){
+    if(typeof el == 'undefined') throw new Error('el 是必须的!')
+    if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
+
+    _target = _locate(el)
+
+    const parent = el.parentNode
+    if(parent && parent != document.body){
+      _targetParent = parent
+      // const comment = document.createComment(`vpin::${el.dataset['pkey']}`);
+      // parent.replaceChild(comment, el)
+      const placeholder = document.createElement("div")
+      placeholder.style.display = "none"
+      placeholder.classList.add("vpin-placeholder")
+      placeholder.classList.add(`vpin-placeholder--${el.dataset['pkey']}`)
+      parent.replaceChild(placeholder, el)
+      reference.nodeName == 'HTML' ? reference.ownerDocument.body.append(el) : reference.append(el)
+    }
+  }
+
+  /** 初始化 */
+  _initEvent()
+  referTo()
+  /** 初始化 */
+
+  const ctx = {
+    containsIn,
+    referTo,
+    pinUp,
+    transfer,
+    destroy,
+  }
+  Object.defineProperties(ctx, {
+    stage: {
+      get:()=>_stage
+    },
+    screens: {
+      get:()=>_screens
+    },
+    container: {
+      get:()=>_container,
+      set:containsIn
+    },
+    reference: {
+      get:()=>_reference,
+      set:referTo
+    },
+    // target: {
+    //   get:()=>target,
+    //   set:val=>{
+    //     target=val
+    //     _updateScreen('target', val)
+    //     // console.log(screenOpts.target, val.getBoundingClientRect())
+    //   }
+    // },
+    offsetOn: {
+      get:()=>offsetOn,
+      set:val=>{
+        if(typeof val == 'undefined') return
+        offsetOn=val
+      }
+    },
+    offsetTop:{
+      get: ()=>offset.top,
+      set: val=>{
+        if(typeof val == 'undefined') return
+        offset.top = val
+      }
+    },
+    offsetBottom:{
+      get: ()=>offset.bottom,
+      set: val=>{
+        if(typeof val == 'undefined') return
+        offset.bottom = val
+      }
+    },
+    offsetLeft:{
+      get: ()=>offset.left,
+      set: val=>{
+        if(typeof val == 'undefined') return
+        offset.left = val
+      }
+    },
+    offsetRight:{
+      get: ()=>offset.right,
+      set: val=>{
+        if(typeof val == 'undefined') return
+        offset.right = val
+      }
+    },
+    fixed: {
+      get:()=>fixed,
+      set:val=>{
+        if(typeof val == 'undefined') return
+        fixed=val
+      }
+    },
+    throttleOn: {
+      get:()=>throttleOn,
+      set:val=>{
+        if(typeof val == 'undefined') return
+        throttleOn=val
+      }
+    },
+    throttleWait: {
+      get:()=>throttleWait,
+      set:val=>{
+        if(typeof val == 'undefined') return
+        throttleWait=val
+      }
+    },
+    zIndex: {
+      get:()=>_target.style.zIndex,
+      set:val=>_target.style.zIndex=val
+    }
+    // originPointX: {
+    //   get:()=>originPoint.x,
+    //   set:val=>originPoint.x=val
+    // },
+    // originPointY: {
+    //   get:()=>originPoint.y,
+    //   set:val=>originPoint.y=val
+    // },
+  })
+  return ctx
 }

@@ -2,7 +2,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import vpin from "../src/main";
 
-Vue.use(vpin())
+Vue.use(vpin({debug:true}))
 Vue.config.productionTip = false;
 
 new Vue({

@@ -2,17 +2,35 @@
   <div id="app">
     <section class="container">
       <header>
-        <h1>论语</h1>
+        <h1>古文</h1>
       </header>
-      <div class="inner" is="pin-container">
-        <nav class="nav">
-          <Pin>
+      <ul class="tab">
+        <li :class="{'current':tab_current==1}"><a href="javascript:;" @click="tab_current=1">论语</a></li>
+        <li :class="{'current':tab_current==2}"><a href="javascript:;" @click="tab_current=2">心经</a></li>
+      </ul>
+
+      <div v-if="tab_current==2" class="inner">
+        <div class="main">
+          <h2 id="心经">心经</h2>
+          <p>观自在菩萨，行深般若波罗密多时，照见五蕴皆空，度一切苦厄。</p>
+          <p>舍利子，色不异空，空不异色，色即是空，空即是色，受、想、行、识，亦复如是。</p>
+          <p>舍利子，是诸法空相，不生不灭，不垢不净，不增不减。</p>
+          <p>是故，空中无色，无受、想、行、识；无眼、耳、鼻、舌、身、意；无色、声、香、味、触、法；无眼界，乃至无意识界；无无明，亦无无明尽，乃至无老死，亦无老死尽；无苦、集、灭、道，无智亦无得。</p>
+          <p>以无所得故，菩提萨埵，依般若波罗密多故，心无挂碍。无挂碍故，无有恐怖。远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗密多故，得阿耨多罗三藐三菩提。</p>
+          <p>故知般若波罗密多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。</p>
+          <p>故说般若波罗密多咒，即说咒曰： 揭谛，揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。</p>
+        </div>
+      </div>
+      <div v-else class="inner">
+        <nav>
+          <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
+          <div class="nav" v-pin.offset="{ container:'.inner', offsetTop:0, offsetLeft:0 }">
             <ul>
               <li><a href="#学而篇">学而篇</a></li>
               <li><a href="#为政篇">为政篇</a></li>
               <li><a href="#里仁篇">里仁篇</a></li>
             </ul>
-          </Pin>
+          </div>
         </nav>
         <div class="main">
           <h2 id="学而篇">学而篇</h2>
@@ -93,13 +111,36 @@
           </div>
         </div>
       </div>
+      <!-- 页脚基于样式的定位作为参考，来进行后续滚动跟随。 -->
+       <!-- v-pin="{throttleOn:false}" -->
+      <footer class="footer">
+        &copy; 2022 PackyTang
+      </footer>
     </section>
   </div>
 </template>
 
 <script>
+// import { Pin } from "../src/main";
+
+// const $pin = new Pin()
+
 export default {
   name: "App",
+  data(){
+    return {
+      tab_current:1
+    }
+  },
+  mounted () {
+    // $pin.mount({
+    //   target:this.$refs.pin,
+    //   fixed:true
+    // })
+  },
+  destroyed () {
+    // $pin.destroy()
+  }
 };
 </script>
 
@@ -120,16 +161,42 @@ html,body{
 .inner{
   display: flex;
   flex-wrap: nowrap;
-  > .nav{
-    width: 120px;
-    flex-shrink: 0;
-    ul,li{ list-style:none; margin:0; padding: 0; }
-    ul{ background-color: #f5f5f5; padding: 10px 15px; }
-    li{ padding: 5px 7px; }
-  }
   > .main{
     padding-left: 20px;
     padding-right: 20px;
+  }
+  > nav{
+    width: 120px;
+    flex-shrink: 0;
+  }
+}
+.nav{
+  ul,li{ list-style:none; margin:0; padding: 0; }
+  ul{ background-color: #f5f5f5; padding: 10px 15px; }
+  li{ padding: 5px 7px; }
+}
+.footer{
+  background-color: #f5f5f5;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  line-height: 50px;
+}
+.tab{
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 10px;
+  li{
+    display: inline-block;
+  }
+  a{
+    display: block;
+    padding: 4px 7px;
+  }
+  li.current a{
+    background-color: #999;
+    color: #fff;
   }
 }
 </style>

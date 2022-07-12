@@ -1,9 +1,11 @@
 import Pin from "./components/Pin.vue"
 import PinContainer from "./components/PinContainer.vue"
 export * from "./utils"
-export { Pin, PinContainer }
+export const components = { Pin, PinContainer }
 
-export default function({prefix=""}={}){
+import directive from "./directives"
+
+export default function({prefix="",debug}={}){
   return {
     install(Vue){
       const components = {
@@ -14,6 +16,8 @@ export default function({prefix=""}={}){
           const component = components[key];
           Vue.component(prefix+component.name, component);
       });
+
+      Vue.directive("pin", directive({debug}))
     }
   }
 }
