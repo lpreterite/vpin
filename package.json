@@ -38,6 +38,7 @@
   },
   "homepage": "https://github.com/lpreterite/vpin#readme",
   "dependencies": {
+    "lodash.throttle": "^4.1.1",
     "vue": "^2.6.14"
   },
   "devDependencies": {
