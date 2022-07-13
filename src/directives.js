@@ -8,7 +8,7 @@ export default function({debug=false}=opts) {
 
     function setting(binding){
       const { fixed, offset:offsetOn, limit } = binding.modifiers || {}
-      const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight } = binding.value || {}
+      const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight, container, reference } = binding.value || {}
       pin.fixed = fixed
       pin.throttleOn = throttleOn
       pin.throttleWait = throttleWait
@@ -18,6 +18,8 @@ export default function({debug=false}=opts) {
       pin.offsetLeft = offsetLeft
       pin.offsetRight = offsetRight
       pin.limit = limit
+      if(typeof container != 'undefined') pin.container = container
+      if(typeof reference != 'undefined') pin.reference = reference
     }
 
     function bind(el, binding){
@@ -25,16 +27,14 @@ export default function({debug=false}=opts) {
       const pkey = `${el.nodeName}${el.className?'.'+el.className:''}`
       el.dataset['pkey'] = pkey
       els.push(pkey)
-
-      setting(binding)
     }
 
     function inserted(el,binding){
       console.log("inserted")
-      const { container } = binding.value || {}
-      pin.containsIn(container)
+
+      setting(binding)
+
       pin.transfer(el)
-      pin.referTo()
       pin.pinUp(el, {zIndex:999+els.indexOf(el.dataset['pkey'])})
     }
 
@@ -43,8 +43,6 @@ export default function({debug=false}=opts) {
 
       setting(binding)
 
-      const { container } = binding.value || {}
-      pin.containsIn(container)
       pin.pinUp(el, {zIndex:999+els.indexOf(el.dataset['pkey'])})
     }
 

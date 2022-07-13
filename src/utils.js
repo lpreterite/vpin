@@ -102,51 +102,62 @@ export function Pin(options={}){
   }
 
   function _onScroll(event){
-    _render()
+    _render(_target, _reference, _container)
   }
 
   function _onResize(event){
-    _locate(_target)
-    _render()
+    _render(_target, _reference, _container)
   }
 
-  function _render(){
+
+  function _getPosition(el, reference=_reference){
+    const rect = el.getBoundingClientRect()
+    return {
+      x: reference.scrollLeft + rect.x,
+      y: reference.scrollTop + rect.y,
+      height: rect.height,
+      width: rect.width
+    }
+  }
+
+
+  function _render(target, reference, container){
     if(fixed) return
+    if(!target) return
+    if(!reference) return
+    if(!container) return
 
-    let offsetX,offsetY;
-    // if(offsetOn){
-    //   const _offset = _offsetFormula(_screens.target, _screens.container, offset)
-    //   offsetX = _reference.scrollLeft + (_screens.container.x - _offset.x)
-    //   offsetY = _reference.scrollTop + (_screens.container.y - _offset.y)
-    // }else{
-    //   offsetX = _reference.scrollLeft + _screens.target.x
-    //   offsetY = _reference.scrollTop + _screens.target.y
-    // }
+    const positions = {
+      container: _getPosition(container, reference),
+    }
+    const movement = {
+      x: 0,
+      y: 0
+    }
+    // 依据受限对象计算偏移量
+    const _offset = _offsetFormula(_screens.target, positions.container, offset)
+    movement.x = reference.scrollLeft + _offset.x
+    movement.y = reference.scrollTop + _offset.y
 
-    const _offset = _offsetFormula(_screens.target, _screens.container, offset)
-    offsetX = _reference.scrollLeft + _offset.x
-    offsetY = _reference.scrollTop + _offset.y
-
+    // 获得受限位置
     if(limit){
-      offsetX = Math.max(_screens.container.x, Math.min(_screens.container.x+_screens.container.width, offsetX))
-      offsetY = Math.max(_screens.container.y, Math.min(_screens.container.y+_screens.container.height, offsetY))
+      movement.x = Math.max(positions.container.x, Math.min(positions.container.x+positions.container.width, movement.x))
+      movement.y = Math.max(positions.container.y, Math.min(positions.container.y+positions.container.height, movement.y))
     }
 
-    _target.style.position = "absolute"
-    _target.style.left = `${offsetX}px`
-    _target.style.top = `${offsetY}px`
-    _target.style.bottom = "auto"
-    _target.style.right = "auto"
+    target.style.position = "absolute"
+    target.style.left = `${movement.x}px`
+    target.style.top = `${movement.y}px`
+    target.style.bottom = "auto"
+    target.style.right = "auto"
+    target.style.height = `${_screens.target.height}px`
+    target.style.width = `${_screens.target.width}px`
+    // target.style.zIndex = '999'
   }
 
-  function _locateContainer(el){// 获得位置信息
-    const rect = el.getBoundingClientRect()
-
-    // 登记基于参照物的位置信息
-    _screens.container.x = _reference.scrollLeft + rect.x
-    _screens.container.y = _reference.scrollTop + rect.y
-    _screens.container.height = rect.height
-    _screens.container.width = rect.width
+  function _locate(el){
+    _screens.target = _getPosition(el)
+    return el
   }
 
   /**
@@ -218,67 +229,7 @@ export function Pin(options={}){
     // }
   }
 
-  /**
-   * 度量位置大小
-   *
-   * @param {*} el
-   * @param {number} [zIndex=999]
-   * @returns
-   */
-  function _locate(el, zIndex=999){
-    // 清空定位样式，使其按默认样式进行布局
-    el.style.position = ""
-    el.style.top = ""
-    el.style.left = ""
-    el.style.bottom = ""
-    el.style.right = ""
-    el.style.height = ""
-    el.style.width = ""
-
-    // 获得位置信息
-    const rect = el.getBoundingClientRect()
-
-    // 登记基于参照物的位置信息
-    _screens.target.x = _reference.scrollLeft + rect.x
-    _screens.target.y = _reference.scrollTop + rect.y
-    _screens.target.height = rect.height
-    _screens.target.width = rect.width
-
-    // 重新给与定位样式设置
-    if(fixed){
-      el.style.position = "fixed"
-      el.style.top = rect.y+"px"
-      el.style.left = rect.x+"px"
-      el.style.bottom = "auto"
-      el.style.right = "auto"
-    }else{
-      el.style.position = "absolute"
-      el.style.bottom = "auto"
-      el.style.right = "auto"
-      el.style.height = `${_screens.target.height}px`
-      el.style.width = `${_screens.target.width}px`
-
-      const _offset = _offsetFormula(_screens.target, _screens.container,offset)
-      el.style.top = `${_reference.scrollTop + _screens.container.y + _offset.y}px`
-      el.style.left = `${_reference.scrollLeft + _screens.container.x + _offset.x}px`
-    }
-    el.style.zIndex = zIndex
-
-    return el
-  }
-
   function destroy(){
-    // const nodeIterator = document.createNodeIterator(
-    //     _reference,
-    //     NodeFilter.SHOW_COMMENT
-    // );
-    // while (nodeIterator.nextNode()) {
-    //   const commentNode = nodeIterator.referenceNode
-    //   console.log(commentNode,commentNode.parentNode,_targetParent)
-    //   if(commentNode.textContent!=`vpin::${_target.dataset['pkey']}`) continue;
-    //   // commentNode.parentNode.replaceChild(_targetParent, commentNode);
-    //   _targetParent.replaceChild(_target, commentNode)
-    // }
     _target.remove()
     _unBindEvent()
   }
@@ -290,7 +241,7 @@ export function Pin(options={}){
     }
     if((val||{}).nodeType != 1) throw new Error('container 并不是元素节点对象!')
     _container = val
-    _locateContainer(val)
+    _render(_target, _reference, _container)
     return ctx
   }
 
@@ -311,6 +262,7 @@ export function Pin(options={}){
     if((val||{}).nodeType != 1) throw new Error('reference 并不是元素节点对象!')
     _reference = val
     _scrollEl = _reference.parentNode
+    _render(_target, _reference, _container)
     _unBindEvent()
     _bindEvent()
     return ctx
@@ -322,6 +274,7 @@ export function Pin(options={}){
     if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
 
     _target = el
+    _render(_target, _reference, _container)
 
     Object
       .keys(options)
@@ -344,6 +297,7 @@ export function Pin(options={}){
     if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
 
     _target = _locate(el)
+    referTo(reference)
 
     const parent = el.parentNode
     if(parent && parent != document.body){
