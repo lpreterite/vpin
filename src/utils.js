@@ -65,8 +65,7 @@ export { throttle }
  * @class
  */
 export function Pin(options={}){
-  const _stage = window
-       ,_screens={
+  const _screens={
           target: { x:0, y:0, width:0, height:0 },
           container: { x:0, y:0, width:0, height:0 },
        }
@@ -74,17 +73,13 @@ export function Pin(options={}){
           resize: undefined,
           scroll: undefined
       }
-  let _targetParent;
+  let _stage = window
+  // let _targetParent;
 
   let {
-    container,
-    target,
-    fixed=false,
     throttleOn=false,
     throttleWait=250,
-    originPoint={x:0,y:0},
     limit=true,
-    offsetOn=false,
     offset={top:Number.NaN,left:Number.NaN,bottom:Number.NaN,right:Number.NaN}
   } = options
 
@@ -106,6 +101,13 @@ export function Pin(options={}){
   }
 
   function _onResize(event){
+    _target.style.left = ""
+    _target.style.top = ""
+    _target.style.bottom = ""
+    _target.style.right = ""
+    _target.style.height = ""
+    _target.style.width = ""
+    _locate(_target)
     _render(_target, _reference, _container)
   }
 
@@ -122,18 +124,18 @@ export function Pin(options={}){
 
 
   function _render(target, reference, container){
-    if(fixed) return
     if(!target) return
     if(!reference) return
     if(!container) return
 
     const positions = {
-      container: _getPosition(container, reference),
+      container: _getPosition(container, reference)
     }
     const movement = {
       x: 0,
-      y: 0
+      y: 0,
     }
+
     // 依据受限对象计算偏移量
     const _offset = _offsetFormula(_screens.target, positions.container, offset)
     movement.x = reference.scrollLeft + _offset.x
@@ -150,8 +152,8 @@ export function Pin(options={}){
     target.style.top = `${movement.y}px`
     target.style.bottom = "auto"
     target.style.right = "auto"
-    target.style.height = `${_screens.target.height}px`
-    target.style.width = `${_screens.target.width}px`
+    target.style.width = `${positions.container.width}px` // 按盒模型排版的情况下，宽继承父级
+    target.style.height = 'auto' //高根据内容撑开
     // target.style.zIndex = '999'
   }
 
@@ -173,25 +175,25 @@ export function Pin(options={}){
     const xFormula = [
       target.x, //按元素当前位置计算
       offset.left, //按Left偏移计算
-      container.width - offset.right  //按Right偏移计算
+      container.width - target.width - offset.right  //按Right偏移计算
     ]
     const yFormula = [
       target.y, //按元素当前位置计算
       offset.top, //按Top偏移计算
-      container.height - offset.bottom,  //按Bottom偏移计算
+      container.height - target.height - offset.bottom,  //按Bottom偏移计算
     ]
 
     const result = {
       x: xFormula[
         [
-          !offsetOn ? true : Number.isNaN(offset.left) && Number.isNaN(offset.right),
+          Number.isNaN(offset.left) && Number.isNaN(offset.right),
           !Number.isNaN(offset.left),
           !Number.isNaN(offset.right),
         ].indexOf(true)
       ],
       y: yFormula[
         [
-          !offsetOn ? true :Number.isNaN(offset.top) && Number.isNaN(offset.bottom),
+          Number.isNaN(offset.top) && Number.isNaN(offset.bottom),
           !Number.isNaN(offset.top),
           !Number.isNaN(offset.bottom),
         ].indexOf(true)
@@ -199,34 +201,6 @@ export function Pin(options={}){
     }
 
     return result
-
-    // const xFormula = [
-    //   target.x, //按元素当前位置计算
-    //   container.x + offset.left, //按Left偏移计算
-    //   container.x + container.width - offset.right  //按Right偏移计算
-    // ][
-    //   [
-    //     offsetOn && Number.isNaN(offset.left) && Number.isNaN(offset.right) ? 0 : false,
-    //     Number.isNaN(offset.left) ? false : 1,
-    //     Number.isNaN(offset.right) ? false : 2,
-    //   ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
-    // ]
-    // const yFormula = [
-    //   target.y, //按元素当前位置计算
-    //   container.y + offset.top, //按Top偏移计算
-    //   container.y + container.height - offset.bottom,  //按Bottom偏移计算
-    // ][
-    //   [
-    //     offsetOn && Number.isNaN(offset.top) && Number.isNaN(offset.bottom) ? 0 : false,
-    //     Number.isNaN(offset.top) ? false : 1,
-    //     Number.isNaN(offset.bottom) ? false : 2,
-    //   ].filter(val=>val!=false).reduce((prev,next)=>prev+next,0)
-    // ]
-
-    // return {
-    //   x: xFormula,
-    //   y: yFormula
-    // }
   }
 
   function destroy(){
@@ -296,19 +270,20 @@ export function Pin(options={}){
     if(typeof el == 'undefined') throw new Error('el 是必须的!')
     if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
 
+    _stage = el.ownerDocument.defaultView
     _target = _locate(el)
     referTo(reference)
 
     const parent = el.parentNode
     if(parent && parent != document.body){
-      _targetParent = parent
-      // const comment = document.createComment(`vpin::${el.dataset['pkey']}`);
-      // parent.replaceChild(comment, el)
-      const placeholder = document.createElement("div")
-      placeholder.style.display = "none"
-      placeholder.classList.add("vpin-placeholder")
-      placeholder.classList.add(`vpin-placeholder--${el.dataset['pkey']}`)
-      parent.replaceChild(placeholder, el)
+      // _targetParent = parent
+      const comment = document.createComment(`vpin::${el.dataset['pkey']}`);
+      parent.replaceChild(comment, el)
+      // const placeholder = document.createElement("div")
+      // placeholder.style.display = "none"
+      // placeholder.classList.add("vpin-placeholder")
+      // placeholder.classList.add(`vpin-placeholder--${el.dataset['pkey']}`)
+      // parent.replaceChild(placeholder, el)
       reference.nodeName == 'HTML' ? reference.ownerDocument.body.append(el) : reference.append(el)
     }
   }
@@ -339,21 +314,6 @@ export function Pin(options={}){
     reference: {
       get:()=>_reference,
       set:referTo
-    },
-    // target: {
-    //   get:()=>target,
-    //   set:val=>{
-    //     target=val
-    //     _updateScreen('target', val)
-    //     // console.log(screenOpts.target, val.getBoundingClientRect())
-    //   }
-    // },
-    offsetOn: {
-      get:()=>offsetOn,
-      set:val=>{
-        if(typeof val == 'undefined') return
-        offsetOn=val
-      }
     },
     offsetTop:{
       get: ()=>offset.top,
@@ -390,13 +350,6 @@ export function Pin(options={}){
         limit = val
       }
     },
-    fixed: {
-      get:()=>fixed,
-      set:val=>{
-        if(typeof val == 'undefined') return
-        fixed=val
-      }
-    },
     throttleOn: {
       get:()=>throttleOn,
       set:val=>{
@@ -415,14 +368,6 @@ export function Pin(options={}){
       get:()=>_target.style.zIndex,
       set:val=>_target.style.zIndex=val
     }
-    // originPointX: {
-    //   get:()=>originPoint.x,
-    //   set:val=>originPoint.x=val
-    // },
-    // originPointY: {
-    //   get:()=>originPoint.y,
-    //   set:val=>originPoint.y=val
-    // },
   })
   return ctx
 }

@@ -2,14 +2,13 @@ import { Pin } from "./utils"
 
 export default function({debug=false}=opts) {
 
-    let els = [] //保留querySelector搜索的唯一键，比如：[data-pkey="141433"]
-    const pin = new Pin()
-    if(debug) window.pin = pin
+    let els = []
+    // const pin = new Pin()
+    if(debug) window.pins = els
 
-    function setting(binding){
-      const { fixed, offset:offsetOn, limit } = binding.modifiers || {}
-      const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight, container, reference } = binding.value || {}
-      pin.fixed = fixed
+    function setting(pin,binding){
+      const { offset:offsetOn } = binding.modifiers || {}
+      const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight, container, reference, limit } = binding.value || {}
       pin.throttleOn = throttleOn
       pin.throttleWait = throttleWait
       pin.offsetOn = offsetOn
@@ -26,30 +25,37 @@ export default function({debug=false}=opts) {
       console.log("bind")
       const pkey = `${el.nodeName}${el.className?'.'+el.className:''}`
       el.dataset['pkey'] = pkey
-      els.push(pkey)
+      els.push([pkey, new Pin({target:el})])
     }
 
     function inserted(el,binding){
       console.log("inserted")
 
-      setting(binding)
+      const index = els.findIndex(([key])=>key==el.dataset['pkey'])
+      const [_,pin] = els[index]
+      setting(pin, binding)
 
       pin.transfer(el)
-      pin.pinUp(el, {zIndex:999+els.indexOf(el.dataset['pkey'])})
+      pin.pinUp(el, {zIndex:999+index})
     }
 
     function update(el, binding){
       console.log("update")
 
-      setting(binding)
+      const index = els.findIndex(([key])=>key==el.dataset['pkey'])
+      const [_,pin] = els[index]
+      setting(pin, binding)
 
-      pin.pinUp(el, {zIndex:999+els.indexOf(el.dataset['pkey'])})
+      pin.transfer(el)
+      pin.pinUp(el, {zIndex:999+index})
     }
 
     function unbind(el){
       console.log("unbind")
-      // el.remove()
-      els.splice(els.indexOf(el.dataset['pkey']), 1)
+
+      const index = els.findIndex(([key])=>key==el.dataset['pkey'])
+      const [_,pin] = els[index]
+      els.splice(index, 1)
 
       pin.destroy()
     }

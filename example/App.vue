@@ -113,7 +113,7 @@
       </div>
       <!-- 页脚基于样式的定位作为参考，来进行后续滚动跟随。 -->
        <!-- v-pin="{throttleOn:false}" -->
-      <footer class="footer">
+      <footer class="footer" v-pin="{limit:false}">
         &copy; 2022 PackyTang
       </footer>
     </section>
