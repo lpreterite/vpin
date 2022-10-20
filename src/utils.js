@@ -115,7 +115,17 @@ export function Pin(options={}){
 
 
   function _getPosition(el, reference=_reference){
-    const rect = el.getBoundingClientRect()
+    let rect;
+    if(el.tagName.toLowerCase()=='html'){
+      rect = {
+        x: 0,
+        y: 0,
+        height: el.clientHeight,
+        width: el.clientWidth,
+      }
+    }else{
+      rect = el.getBoundingClientRect()
+    }
     return {
       x: reference.scrollLeft + rect.x,
       y: reference.scrollTop + rect.y,

@@ -24,7 +24,7 @@ export default function({debug=false}=opts) {
 
     function _transfer(pin){
       return el =>{
-        if(pin.cssEffect && pin.sticky) pin.untransfer(el)
+        if(pin.cssEffect) pin.untransfer(el)
         else pin.transfer(el)
       }
     }
