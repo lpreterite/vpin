@@ -8,10 +8,12 @@
 
 基于 vue 的钉子组件，帮助你把内容固定到屏幕中 📌。
 
-## 具体功能
+## 具体效果与功能
 
--   当屏幕滚动过组件位置，组件会根据设置固定在屏幕的相对位置上
--   当屏幕滚动过 pin 组件的父级组件，pin 组件不会再固定于屏幕的相对位置上，固定功能将会失效
+- 核心功能就是把块固定于屏幕，滚动时不会随着内容滚动。
+- 支持动态计算定位，参照物默认为窗口。
+- 支持粘性定位，会根据范围对象开启固定效果。[^1]
+- 可选择基于css实现效果，性能消耗低和效果更好。
 
 [线上例子](https://codepen.io/packy1980/pen/RmrNQm#0)
 
@@ -39,90 +41,97 @@ Vue.use(vpin)
             <div class="brand"></div>
             <div class="account"></div>
         </header>
-        <PinContainer class="inner">
-            <nav class="nav">
-                <Pin>
-                    <ul>
-                        <li><a href="#">仪表盘</a></li>
-                        <li><a href="#">图片管理</a></li>
-                        <li><a href="#">文章管理</a></li>
-                        <li><a href="#">用户管理</a></li>
-                    </ul>
-                </Pin>
+        <div class="inner">
+            <nav>
+              <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
+              <div class="nav" v-pin.sticky.cssEffect="{ container:'.inner>nav', top:0, left:0 }">
+                <ul>
+                  <li><a href="#学而篇">学而篇</a></li>
+                  <li><a href="#为政篇">为政篇</a></li>
+                  <li><a href="#里仁篇">里仁篇</a></li>
+                </ul>
+              </div>
             </nav>
             <div class="main">内容</div>
-        </PinContainer>
+        </div>
+        <!-- 页脚基于样式的定位作为参考，来进行后续滚动跟随。 -->
+        <footer class="footer" v-pin.cssEffect="{bottom:0}">
+          &copy; 2022 PackyTang
+        </footer>
     </section>
 </template>
 ```
 
 ### 包含属性(Props)
 
-| 名称              | 限制             | 描述                                                                                                                                                         |
-| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| disabled          | [Boolean]        | default: false；钉在屏幕功能是否失效                                                                                                                         |
-| dynamic           | [Boolean]        | default: false；是否动态计算；开启后会在 window.onscroll 事件中触发 container 和 pin 组件位置到计算                                                          |
-| offsetX           | [String][number] | default: 0；相对于屏幕的 Y 轴定位(top)的偏移值                                                                                                               |
-| offsetY           | [String][number] | default: 0；相对于屏幕的 X 轴定位(left)的偏移值                                                                                                              |
-| container         | [String]         | default: 'body';计算定位的父级元素标签，如果父级有使用`PinContainer`包裹，则会默认使用其为父级                                                               |
-| fixed             | [Boolean]        | default: true; 是否开启基于屏幕定位计算                                                                                                                      |
-| innerStyle        | [Object]         | default: {}; 钉在屏幕的元素的额外样式                                                                                                                        |
-| scrollWith(`new`) | [String]         | default: "vertical", 可选 `horizontal` 水平滚动， `vertical` 垂直滚动; 根据滚动方向进行定位处理，只用于`fixed`为`true`时，不期望做任何优化时，可存入空字符。 |
-| overflow(`new`)   | [Boolean]        | default: false, 出范围后是否继续钉在屏幕；设置`true`后当超出范围后将继续钉在屏幕上                                                                           |
+| 名称                                             | 限制              | 描述                                                                                                                                   |
+|--------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `v-pin.sticky`                                   | [Boolean]         | 默认值为`false`,是否开启粘性定位效果，设置后开启。                                                                                       |
+| `v-pin.cssEffect`                                | [Boolean]         | 默认值为`false`,是否使用CSS效果代替动态计算，设置后开启。<br> 开启后，默认搬运定位对象至body的行为会取消，定位对象的DOM结构不变。             |
+| `v-pin="{ container:document.documentElement }"` | [String, Element] | 范围对象，默认值为`HTML DOM对象`，范围对象用于计算生效范围，一般与粘性定位效果共同使用 。                                                  |
+| `v-pin="{ reference:document.documentElement }"` | [String, Element] | 参照对象，默认值为`HTML DOM对象`，参照对象用于监听滚动事件，通过动态实现定位。滚动视窗不是浏览器窗口本身时，指定此对象可实现元素内滚动定位。 |
+| `v-pin="{ top:0,left:0,right:0,bottom:0 }"`      | [Number]          | 偏移量，默认值为`Number.NaN`。                                                                                                           |
 
-### 包含函数
+## 例子1
 
-#### offset
+使用CSS实现的使用粘性定位。✨推荐！
 
-获取元素基于页面的定位
-
-| 参数 | 限制                 | 描述         |
-| ---- | -------------------- | ------------ |
-| el   | 必须；[HTML Element] | 要计算的元素 |
-
-用法
-
-```js
-import { offset } from "vpin"
-const _offset = offset(document.querySelector(".pin"))
-console.log(_offset)
-// {x: 0, y: 0}
+```html
+<template>
+    <section class="container">
+        <header>
+            <div class="brand"></div>
+            <div class="account"></div>
+        </header>
+        <div class="inner">
+            <nav>
+              <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
+              <div class="nav" v-pin.sticky.cssEffect="{ container:'.inner>nav', top:0, left:0 }">
+                <ul>
+                  <li><a href="#学而篇">学而篇</a></li>
+                  <li><a href="#为政篇">为政篇</a></li>
+                  <li><a href="#里仁篇">里仁篇</a></li>
+                </ul>
+              </div>
+            </nav>
+            <div class="main">内容</div>
+        </div>
+    </section>
+</template>
 ```
 
-#### getNodeLocation
+## 例子2
 
-获取元素位置
+使用CSS实现的固定至底部效果。
 
-| 参数 | 限制                 | 描述         |
-| ---- | -------------------- | ------------ |
-| el   | 必须，[HTML Element] | 要计算的元素 |
-
-用法
-
-```js
-import { getNodeLocation } from "vpin"
-const _location = getNodeLocation(document.querySelector(".pin"))
-console.log(_location)
-// { x: 0, y: 0, height: 0, width: 0, offsetX: 0, offsetY: 0 }
+```html
+<template>
+    <section class="container">
+        <header>
+            <div class="brand"></div>
+            <div class="account"></div>
+        </header>
+        <div class="inner">
+            <nav>
+              <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
+              <div class="nav" v-pin.sticky="{ container:'.inner>nav', top:0, left:0 }">
+                <ul>
+                  <li><a href="#学而篇">学而篇</a></li>
+                  <li><a href="#为政篇">为政篇</a></li>
+                  <li><a href="#里仁篇">里仁篇</a></li>
+                </ul>
+              </div>
+            </nav>
+            <div class="main">内容</div>
+        </div>
+        <!-- 页脚基于样式的定位作为参考，来进行后续滚动跟随。 -->
+        <footer class="footer" v-pin.cssEffect="{bottom:0}">
+          &copy; 2022 PackyTang
+        </footer>
+    </section>
+</template>
 ```
 
-#### matchRange
-
-匹配有效范围
-
-| 参数   | 限制           | 描述                                                                                  |
-| ------ | -------------- | ------------------------------------------------------------------------------------- |
-| target | 必须；[Object] | 要测试对象，包含以下字段`{ x: 0, y: 0, height: 0, width: 0, offsetX: 0, offsetY: 0 }` |
-| range  | 必须；[Object] | 有效范围，包含以下字段`{ x: 0, y: 0, height: 0, width: 0, offsetX: 0, offsetY: 0 }`   |
-| offset | 可选；[Object] | 偏移量，包含以下字段`{ x: 0, y: 0 }`                                                  |
-
-用法
-
-```js
-import { matchRange } from "vpin"
-const { effective, x, y, xLimit, yLimit } = matchRange({}, {})
-console.log(`是否在有效范围：%s; 范围：%s, %s, %s, %s`, effective ? "是" : "否", x, y, xLimit, yLimit)
-```
 
 ## Develop
 
@@ -133,3 +142,6 @@ $ npm run serve
 # or
 $ yarn serve
 ```
+
+
+[^1]: 粘性定位见[`position: sticky;`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/position)
