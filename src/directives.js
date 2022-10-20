@@ -7,52 +7,53 @@ export default function({debug=false}=opts) {
     if(debug) window.pins = els
 
     function setting(pin,binding){
-      const { offset:offsetOn } = binding.modifiers || {}
-      const { throttleOn, throttleWait, offsetTop, offsetBottom, offsetLeft, offsetRight, container, reference, limit } = binding.value || {}
+      const { sticky,cssEffect } = binding.modifiers || {}
+      const { throttleOn, throttleWait, top, bottom, left, right, container, reference, limit } = binding.value || {}
       pin.throttleOn = throttleOn
       pin.throttleWait = throttleWait
-      pin.offsetOn = offsetOn
-      pin.offsetTop = offsetTop
-      pin.offsetBottom = offsetBottom
-      pin.offsetLeft = offsetLeft
-      pin.offsetRight = offsetRight
+      pin.sticky = sticky
+      pin.cssEffect = cssEffect
+      pin.top = top
+      pin.bottom = bottom
+      pin.left = left
+      pin.right = right
       pin.limit = limit
       if(typeof container != 'undefined') pin.container = container
       if(typeof reference != 'undefined') pin.reference = reference
     }
 
+    function _transfer(pin){
+      return el =>{
+        if(pin.cssEffect && pin.sticky) pin.untransfer(el)
+        else pin.transfer(el)
+      }
+    }
+
     function bind(el, binding){
-      console.log("bind")
-      const pkey = `${el.nodeName}${el.className?'.'+el.className:''}`
+      const pkey = `${el.nodeName.toLowerCase()}${el.className?'.'+el.className:''}`
       el.dataset['pkey'] = pkey
       els.push([pkey, new Pin({target:el})])
     }
 
     function inserted(el,binding){
-      console.log("inserted")
-
       const index = els.findIndex(([key])=>key==el.dataset['pkey'])
       const [_,pin] = els[index]
       setting(pin, binding)
 
-      pin.transfer(el)
+      _transfer(pin)(el)
       pin.pinUp(el, {zIndex:999+index})
     }
 
     function update(el, binding){
-      console.log("update")
-
       const index = els.findIndex(([key])=>key==el.dataset['pkey'])
       const [_,pin] = els[index]
       setting(pin, binding)
 
-      pin.transfer(el)
+      _transfer(pin)(el)
       pin.pinUp(el, {zIndex:999+index})
     }
 
     function unbind(el){
-      console.log("unbind")
-
       const index = els.findIndex(([key])=>key==el.dataset['pkey'])
       const [_,pin] = els[index]
       els.splice(index, 1)

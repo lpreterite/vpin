@@ -80,7 +80,9 @@ export function Pin(options={}){
     throttleOn=false,
     throttleWait=250,
     limit=true,
-    offset={top:Number.NaN,left:Number.NaN,bottom:Number.NaN,right:Number.NaN}
+    offset={top:Number.NaN,left:Number.NaN,bottom:Number.NaN,right:Number.NaN},
+    sticky=true,
+    cssEffect=false,
   } = options
 
   function _initEvent(){
@@ -132,26 +134,39 @@ export function Pin(options={}){
       container: _getPosition(container, reference)
     }
     const movement = {
-      x: 0,
-      y: 0,
+      top: 0,
+      left: 0,
+      bottom: "auto",
+      right: "auto"
+    }
+    let position = "absolute"
+
+    if(!cssEffect){
+
+      // 依据受限对象计算偏移量
+      const _offset = _offsetFormula(_screens.target, positions.container, offset)
+      movement.left = reference.scrollLeft + _offset.x
+      movement.top = reference.scrollTop + _offset.y
+
+      // 获得受限位置
+      if(limit){
+        movement.left = Math.max(positions.container.x, Math.min(positions.container.x+positions.container.width, movement.left))
+        movement.top = Math.max(positions.container.y, Math.min(positions.container.y+positions.container.height, movement.top))
+      }
+
+    }else{
+      position = sticky?"sticky":"fixed"
+      movement.top = Number.isNaN(offset.top) || typeof offset.top == 'undefined' ? "auto" : offset.top
+      movement.left = Number.isNaN(offset.left) || typeof offset.top == 'undefined' ? "auto" : offset.left
+      movement.right = Number.isNaN(offset.right) || typeof offset.top == 'undefined' ? "auto" : offset.right
+      movement.bottom = Number.isNaN(offset.bottom) || typeof offset.top == 'undefined' ? "auto" : offset.bottom
     }
 
-    // 依据受限对象计算偏移量
-    const _offset = _offsetFormula(_screens.target, positions.container, offset)
-    movement.x = reference.scrollLeft + _offset.x
-    movement.y = reference.scrollTop + _offset.y
-
-    // 获得受限位置
-    if(limit){
-      movement.x = Math.max(positions.container.x, Math.min(positions.container.x+positions.container.width, movement.x))
-      movement.y = Math.max(positions.container.y, Math.min(positions.container.y+positions.container.height, movement.y))
-    }
-
-    target.style.position = "absolute"
-    target.style.left = `${movement.x}px`
-    target.style.top = `${movement.y}px`
-    target.style.bottom = "auto"
-    target.style.right = "auto"
+    target.style.position = position
+    target.style.left = Number.isFinite(movement.left)?`${movement.left}px`:movement.left
+    target.style.top = Number.isFinite(movement.top)?`${movement.top}px`:movement.top
+    target.style.bottom = Number.isFinite(movement.bottom)?`${movement.bottom}px`:movement.bottom
+    target.style.right = Number.isFinite(movement.right)?`${movement.right}px`:movement.right
     target.style.width = `${positions.container.width}px` // 按盒模型排版的情况下，宽继承父级
     target.style.height = 'auto' //高根据内容撑开
     // target.style.zIndex = '999'
@@ -287,6 +302,29 @@ export function Pin(options={}){
       reference.nodeName == 'HTML' ? reference.ownerDocument.body.append(el) : reference.append(el)
     }
   }
+  /**
+   * 取消转移
+   *
+   * @param {*} [el=_target]
+   * @param {*} [reference=_reference]
+   */
+  function untransfer(el=_target, reference=_reference){
+    if(typeof el == 'undefined') throw new Error('el 是必须的!')
+    if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
+
+    _stage = el.ownerDocument.defaultView
+    _target = _locate(el)
+    referTo(reference)
+
+    const parent = el.parentNode
+    var iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
+    var curNode;
+    while (curNode = iterator.nextNode()) {
+      console.log(curNode.nodeValue, `vpin::${el.dataset['pkey']}`)
+      if(curNode.nodeValue.indexOf(`vpin::${el.dataset['pkey']}`) < 0) continue;
+      curNode.parentNode.replaceChild(el, curNode)
+    }
+  }
 
   /** 初始化 */
   _initEvent()
@@ -298,6 +336,7 @@ export function Pin(options={}){
     referTo,
     pinUp,
     transfer,
+    untransfer,
     destroy,
   }
   Object.defineProperties(ctx, {
@@ -315,28 +354,42 @@ export function Pin(options={}){
       get:()=>_reference,
       set:referTo
     },
-    offsetTop:{
+    target: {
+      get:()=>_target
+    },
+    sticky: {
+      get:()=>sticky,
+      set:val=>{
+        sticky=val
+        limit=val
+      }
+    },
+    cssEffect: {
+      get:()=>cssEffect,
+      set:val=>cssEffect=val
+    },
+    top:{
       get: ()=>offset.top,
       set: val=>{
         if(typeof val == 'undefined') return
         offset.top = val
       }
     },
-    offsetBottom:{
+    bottom:{
       get: ()=>offset.bottom,
       set: val=>{
         if(typeof val == 'undefined') return
         offset.bottom = val
       }
     },
-    offsetLeft:{
+    left:{
       get: ()=>offset.left,
       set: val=>{
         if(typeof val == 'undefined') return
         offset.left = val
       }
     },
-    offsetRight:{
+    right:{
       get: ()=>offset.right,
       set: val=>{
         if(typeof val == 'undefined') return
