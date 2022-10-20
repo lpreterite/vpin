@@ -1,5 +1,5 @@
 {
-  "name": "@i-components/vpin",
+  "name": "vpin",
   "version": "0.0.0",
   "description": "基于 vue 的钉子组件，把你的内容固定到屏幕中📌。",
   "main": "dist/vpin.cjs.js",
@@ -24,7 +24,7 @@
     "url": "https://github.com/lpreterite/vpin"
   },
   "publishConfig": {
-    "registry": "http://119.29.101.140:4873/"
+    "registry": "https://registry.npmjs.org/"
   },
   "keywords": [
     "vue2",
