@@ -29,7 +29,7 @@ npm install -S vpin
 import Vue from "vue"
 import vpin from "vpin"
 
-Vue.use(vpin)
+Vue.use(vpin())
 ```
 
 ## 使用
