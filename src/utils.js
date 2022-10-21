@@ -74,7 +74,7 @@ export function Pin(options={}){
           scroll: undefined
       }
   let _stage = window
-  // let _targetParent;
+  let _targetParent;
 
   let {
     throttleOn=false,
@@ -84,6 +84,15 @@ export function Pin(options={}){
     sticky=true,
     cssEffect=false,
   } = options
+
+  const ctx = {
+    containsIn,
+    referTo,
+    pinUp,
+    transfer,
+    untransfer,
+    destroy,
+  }
 
   function _initEvent(){
     _events.scroll = throttleOn ? throttle(_onScroll, throttleWait, {}) : _onScroll //移除了更实时了
@@ -229,8 +238,10 @@ export function Pin(options={}){
   }
 
   function destroy(){
-    _target.remove()
     _unBindEvent()
+    untransfer()
+
+    if(_targetParent && !_targetParent.parentChild) _target.remove()
   }
 
   let _container=document.documentElement
@@ -281,6 +292,23 @@ export function Pin(options={}){
         if(typeof ctx[key] == 'undefined') return
         ctx[key] = options[key]
       })
+
+    // const parent = el.parentNode
+    // if(!sticky){
+
+    //   //移除占位元素
+    //   let placeholder = document.querySelector(`.vpin-placeholder[pkey="${el.dataset['pkey']}"]`)
+    //   if(!!placeholder) return
+
+    //   //占位元素
+    //   placeholder = document.createElement("div")
+    //   // placeholder.style.display = "none"
+    //   placeholder.classList.add("vpin-placeholder")
+    //   placeholder.dataset["pkey"]=el.dataset['pkey']
+    //   placeholder.style.height = _screens.target.height+"px"
+    //   placeholder.style.width = _screens.target.width+"px"
+    //   _targetParent.replaceChild(placeholder, el)
+    // }
   }
 
   /**
@@ -291,7 +319,7 @@ export function Pin(options={}){
    * @param {*} [el=_target]
    * @param {*} [reference=_reference]
    */
-  function transfer(el=_target, reference=_reference){
+  function transfer(el=_target, reference=_reference, { placeholderOn=true }={}){
     if(typeof el == 'undefined') throw new Error('el 是必须的!')
     if((el||{}).nodeType != 1) throw new Error('el 并不是元素节点对象!')
 
@@ -301,15 +329,21 @@ export function Pin(options={}){
 
     const parent = el.parentNode
     if(parent && parent != document.body){
-      // _targetParent = parent
+      _targetParent = parent
       const comment = document.createComment(`vpin::${el.dataset['pkey']}`);
       parent.replaceChild(comment, el)
-      // const placeholder = document.createElement("div")
-      // placeholder.style.display = "none"
-      // placeholder.classList.add("vpin-placeholder")
-      // placeholder.classList.add(`vpin-placeholder--${el.dataset['pkey']}`)
-      // parent.replaceChild(placeholder, el)
+
+      //转移对象
       reference.nodeName == 'HTML' ? reference.ownerDocument.body.append(el) : reference.append(el)
+
+      if(!placeholderOn) return
+      //占位元素
+      const placeholder = document.createElement("div")
+      placeholder.classList.add("vpin-placeholder")
+      placeholder.classList.add(`vpin-placeholder--${el.dataset['pkey']}`)
+      placeholder.style.height = _screens.target.height+"px"
+      placeholder.style.width = _screens.target.width+"px"
+      comment.after(placeholder)
     }
   }
   /**
@@ -326,14 +360,19 @@ export function Pin(options={}){
     _target = _locate(el)
     referTo(reference)
 
-    const parent = el.parentNode
     var iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
     var curNode;
     while (curNode = iterator.nextNode()) {
       console.log(curNode.nodeValue, `vpin::${el.dataset['pkey']}`)
       if(curNode.nodeValue.indexOf(`vpin::${el.dataset['pkey']}`) < 0) continue;
       curNode.parentNode.replaceChild(el, curNode)
+      curNode.parentNode.style.height = ""
+      curNode.parentNode.style.width = ""
     }
+
+    // //移除占位元素
+    const placeholder = document.querySelector(`.vpin-placeholder[pkey="${el.dataset['pkey']}"]`)
+    if(placeholder) placeholder.remove()
   }
 
   /** 初始化 */
@@ -341,14 +380,6 @@ export function Pin(options={}){
   referTo()
   /** 初始化 */
 
-  const ctx = {
-    containsIn,
-    referTo,
-    pinUp,
-    transfer,
-    untransfer,
-    destroy,
-  }
   Object.defineProperties(ctx, {
     stage: {
       get:()=>_stage

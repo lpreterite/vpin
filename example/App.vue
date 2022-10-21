@@ -24,7 +24,7 @@
       <div v-else class="inner">
         <nav>
           <!-- 根据容器范围开启定位，定位后需要保留原位置空位 -->
-          <div class="nav" v-pin.sticky.cssEffect="{ container:'.inner>nav', top:0, left:0 }">
+          <div class="nav" v-pin.sticky="{ container:'.inner>nav', top:0, left:0 }">
             <ul>
               <li><a href="#学而篇">学而篇</a></li>
               <li><a href="#为政篇">为政篇</a></li>
@@ -113,7 +113,7 @@
       </div>
       <!-- 页脚基于样式的定位作为参考，来进行后续滚动跟随。 -->
        <!-- v-pin="{throttleOn:false}" -->
-      <footer class="footer" v-pin.cssEffect="{bottom:0}">
+      <footer class="footer" v-pin="{bottom:0}">
         &copy; 2022 PackyTang
       </footer>
     </section>

@@ -30,7 +30,7 @@ export default function({debug=false}=opts) {
     }
 
     function bind(el, binding){
-      const pkey = `${el.nodeName.toLowerCase()}${el.className?'.'+el.className:''}`
+      const pkey = btoa(`${el.nodeName.toLowerCase()}${el.className?'.'+el.className:''}`)
       el.dataset['pkey'] = pkey
       els.push([pkey, new Pin({target:el})])
     }
