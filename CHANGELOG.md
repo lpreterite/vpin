@@ -8,6 +8,23 @@
 
 
 
+## [1.1.0](https://github.com/lpreterite/vpin/compare/1.0.0...1.1.0) (2022-10-21)
+
+
+### 📝 Documentation | 文档
+
+* 更改安装插件步骤的代码例子 ([52c9592](https://github.com/lpreterite/vpin/commit/52c95925a3d75ab96c5b40bc73733479ab89a718))
+
+
+### ✨ Features | 新功能
+
+* 动态计算时被转移的元素原来位置增加占位元素保留空白空间 ([310b930](https://github.com/lpreterite/vpin/commit/310b9307f9b2b6c450e82aef4d68756d8c4bc89f))
+
+
+### 👷‍ Build System | 构建
+
+* 增加pkg-lock ([74b3512](https://github.com/lpreterite/vpin/commit/74b3512b8d8a0a52d6b8a4fad45da4a81fa91426))
+
 ## [1.0.0](https://github.com/lpreterite/vpin/compare/0.2.4...1.0.0) (2022-10-20)
 
 

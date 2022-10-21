@@ -1,6 +1,6 @@
 {
   "name": "vpin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "基于 vue 的钉子组件，把你的内容固定到屏幕中📌。",
   "main": "dist/vpin.cjs.js",
   "module": "dist/vpin.esm.js",
