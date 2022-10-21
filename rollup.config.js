@@ -22,6 +22,16 @@ const plugins = [
  */
 const globals = {};
 
+const terserOpts = {
+  // format: {
+  //   comments: false //移除所有注释
+  // }
+  compress:{
+    // drop_console: true, //移除console.* [terser-webpack-plugin/issues/57](https://github.com/webpack-contrib/terser-webpack-plugin/issues/57#issuecomment-453986632)
+    pure_funcs: ['console.info', 'console.debug', 'console.log'] //移除指定函数
+  }
+}
+
 export default [
   {
     input: "src/main.js",
@@ -41,7 +51,7 @@ export default [
         globals
       },
     ],
-    plugins,
+    plugins: [...plugins, terser(terserOpts)],
     external: Object.keys(globals),
   },
   {
@@ -56,7 +66,7 @@ export default [
         compact: true
       },
     ],
-    plugins: [...plugins, babel()]
+    plugins: [...plugins, babel(), terser(terserOpts)]
   },
   {
     input: "src/brower.js",
@@ -70,6 +80,6 @@ export default [
         compact: true
       },
     ],
-    plugins: [...plugins, babel(), terser({ output: { comments: false } })]
+    plugins: [...plugins, babel(), terser(terserOpts)]
   }
 ];
