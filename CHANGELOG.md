@@ -8,6 +8,18 @@
 
 
 
+### [1.1.1](https://github.com/lpreterite/vpin/compare/1.1.0...1.1.1) (2022-11-01)
+
+
+### 👷‍ Build System | 构建
+
+* 所有打包增加压缩环节 ([e05e9d9](https://github.com/lpreterite/vpin/commit/e05e9d99c6f731362eadf9a5fdc84d71bb44d2ab))
+
+
+### 🐛 Bug Fixes | Bug 修复
+
+* 切换界面时找不到占位元素父级的情况 ([07fa21a](https://github.com/lpreterite/vpin/commit/07fa21a0b3101ea621acc2f1711eadc1d282c2d8))
+
 ## [1.1.0](https://github.com/lpreterite/vpin/compare/1.0.0...1.1.0) (2022-10-21)
 
 
