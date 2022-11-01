@@ -365,9 +365,9 @@ export function Pin(options={}){
     while (curNode = iterator.nextNode()) {
       console.log(curNode.nodeValue, `vpin::${el.dataset['pkey']}`)
       if(curNode.nodeValue.indexOf(`vpin::${el.dataset['pkey']}`) < 0) continue;
-      curNode.parentNode.replaceChild(el, curNode)
       curNode.parentNode.style.height = ""
       curNode.parentNode.style.width = ""
+      curNode.parentNode.replaceChild(el, curNode)
     }
 
     // //移除占位元素
